@@ -38,26 +38,27 @@ allow {
 
 allow {
     input.scope == utils.CREATE
-    utils.has_perm(utils.USER)
+    # utils.has_perm(utils.USER)
+    utils.is_admin
     utils.is_sandbox
 }
 
-allow {
-    input.scope == utils.CREATE
-    input.auth.organization.id == input.resource.organization.id
-    utils.has_perm(utils.USER)
-    organizations.has_perm(organizations.MAINTAINER)
-}
+# allow {
+#     input.scope == utils.CREATE
+#     input.auth.organization.id == input.resource.organization.id
+#     utils.has_perm(utils.USER)
+#     organizations.has_perm(organizations.MAINTAINER)
+# }
 
 allow {
     input.scope == utils.LIST
     utils.is_sandbox
 }
 
-allow {
-    input.scope == utils.LIST
-    organizations.is_member
-}
+# allow {
+#     input.scope == utils.LIST
+#     organizations.is_member
+# }
 
 filter = [] { # Django Q object to filter list of entries
     utils.is_admin
@@ -83,19 +84,19 @@ allow {
     utils.is_resource_owner
 }
 
-allow {
-    { utils.VIEW, utils.LIST_CONTENT }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    organizations.is_member
-    utils.is_resource_owner
-}
+# allow {
+#     { utils.VIEW, utils.LIST_CONTENT }[input.scope]
+#     input.auth.organization.id == input.resource.organization.id
+#     organizations.is_member
+#     utils.is_resource_owner
+# }
 
-allow {
-    { utils.VIEW, utils.LIST_CONTENT }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    utils.has_perm(utils.USER)
-    organizations.has_perm(organizations.SUPERVISOR)
-}
+# allow {
+#     { utils.VIEW, utils.LIST_CONTENT }[input.scope]
+#     input.auth.organization.id == input.resource.organization.id
+#     utils.has_perm(utils.USER)
+#     organizations.has_perm(organizations.SUPERVISOR)
+# }
 
 allow {
     { utils.UPDATE, utils.DELETE }[input.scope]
@@ -104,18 +105,18 @@ allow {
     utils.is_resource_owner
 }
 
-allow {
-    { utils.UPDATE, utils.DELETE }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    organizations.is_member
-    utils.has_perm(utils.WORKER)
-    utils.is_resource_owner
-}
+# allow {
+#     { utils.UPDATE, utils.DELETE }[input.scope]
+#     input.auth.organization.id == input.resource.organization.id
+#     organizations.is_member
+#     utils.has_perm(utils.WORKER)
+#     utils.is_resource_owner
+# }
 
 
-allow {
-    { utils.UPDATE, utils.DELETE }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    utils.has_perm(utils.USER)
-    organizations.has_perm(organizations.MAINTAINER)
-}
+# allow {
+#     { utils.UPDATE, utils.DELETE }[input.scope]
+#     input.auth.organization.id == input.resource.organization.id
+#     utils.has_perm(utils.USER)
+#     organizations.has_perm(organizations.MAINTAINER)
+# }

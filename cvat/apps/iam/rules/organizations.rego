@@ -62,20 +62,20 @@ has_perm(role) {
 }
 
 default allow = false
-allow {
-    utils.is_admin
-}
+# allow {
+#     utils.is_admin
+# }
 
-allow {
-    input.scope == utils.CREATE
-    input.resource.user.num_resources == 0
-    utils.has_perm(utils.USER)
-}
+# allow {
+#     input.scope == utils.CREATE
+#     input.resource.user.num_resources == 0
+#     utils.has_perm(utils.USER)
+# }
 
-allow {
-    input.scope == utils.CREATE
-    utils.has_perm(utils.BUSINESS)
-}
+# allow {
+#     input.scope == utils.CREATE
+#     utils.has_perm(utils.BUSINESS)
+# }
 
 allow {
     input.scope == utils.LIST
@@ -98,20 +98,20 @@ allow {
     input.resource.user.role != null
 }
 
-allow {
-    input.scope == utils.UPDATE
-    utils.has_perm(utils.WORKER)
-    utils.is_resource_owner
-}
+# allow {
+#     input.scope == utils.UPDATE
+#     utils.has_perm(utils.WORKER)
+#     utils.is_resource_owner
+# }
 
-allow {
-    input.scope == utils.UPDATE
-    utils.has_perm(utils.WORKER)
-    input.resource.user.role == MAINTAINER
-}
+# allow {
+#     input.scope == utils.UPDATE
+#     utils.has_perm(utils.WORKER)
+#     input.resource.user.role == MAINTAINER
+# }
 
-allow {
-    input.scope == utils.DELETE
-    utils.has_perm(utils.WORKER)
-    utils.is_resource_owner
-}
+# allow {
+#     input.scope == utils.DELETE
+#     utils.has_perm(utils.WORKER)
+#     utils.is_resource_owner
+# }

@@ -42,30 +42,32 @@ is_project_staff {
     utils.is_resource_assignee
 }
 
-allow {
-    utils.is_admin
-}
+# TODO @ feat: project support
 
-allow {
-    { utils.CREATE, utils.IMPORT_BACKUP }[input.scope]
-    utils.is_sandbox
-    input.resource.user.num_resources < 3
-    utils.has_perm(utils.USER)
-}
+# allow {
+#     utils.is_admin
+# }
 
-allow {
-    { utils.CREATE, utils.IMPORT_BACKUP }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    input.resource.user.num_resources < 3
-    utils.has_perm(utils.USER)
-    organizations.has_perm(organizations.SUPERVISOR)
-}
+# allow {
+#     { utils.CREATE, utils.IMPORT_BACKUP }[input.scope]
+#     utils.is_sandbox
+#     input.resource.user.num_resources < 3
+#     utils.has_perm(utils.USER)
+# }
 
-allow {
-    { utils.CREATE, utils.IMPORT_BACKUP }[input.scope]
-    utils.is_sandbox
-    utils.has_perm(utils.BUSINESS)
-}
+# allow {
+#     { utils.CREATE, utils.IMPORT_BACKUP }[input.scope]
+#     input.auth.organization.id == input.resource.organization.id
+#     input.resource.user.num_resources < 3
+#     utils.has_perm(utils.USER)
+#     organizations.has_perm(organizations.SUPERVISOR)
+# }
+
+# allow {
+#     { utils.CREATE, utils.IMPORT_BACKUP }[input.scope]
+#     utils.is_sandbox
+#     utils.has_perm(utils.BUSINESS)
+# }
 
 allow {
     { utils.CREATE, utils.IMPORT_BACKUP }[input.scope]
