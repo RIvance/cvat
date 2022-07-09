@@ -22,10 +22,12 @@ import exportReducer from './export-reducer';
 import importReducer from './import-reducer';
 import cloudStoragesReducer from './cloud-storages-reducer';
 import organizationsReducer from './organizations-reducer';
+import userAssetsReducer from './user-assets-reducer';
 
 export default function createRootReducer(): Reducer {
     return combineReducers({
         auth: authReducer,
+        userAssets: userAssetsReducer,
         projects: projectsReducer,
         tasks: tasksReducer,
         jobs: jobsReducer,

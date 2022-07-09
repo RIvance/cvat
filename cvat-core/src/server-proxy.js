@@ -1118,6 +1118,23 @@
                 return response.data;
             }
 
+            async function getOwnedPoints() {
+                const { backendAPI } = config;
+
+                let response = null;
+                try {
+                    const url = `${backendAPI}/users/points`;
+                    response = await Axios.get(url, {
+                        proxy: config.proxy,
+                        responseType: 'text',
+                    });
+                } catch (errorData) {
+                    generateError(errorData);
+                }
+
+                return response.data;
+            }
+
             async function getPreview(tid, jid) {
                 const { backendAPI } = config;
 
@@ -1880,6 +1897,8 @@
                         value: Object.freeze({
                             get: getUsers,
                             self: getSelf,
+                            // TODO! temp solution, should move to UserAssets interface in the future
+                            ownedPoints: getOwnedPoints,
                         }),
                         writable: false,
                     },

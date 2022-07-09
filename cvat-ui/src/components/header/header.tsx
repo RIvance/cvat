@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 import './styles.scss';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useEffect } from 'react';
+import { connect, useDispatch } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { Row, Col } from 'antd/lib/grid';
 import Icon, {
@@ -18,6 +18,7 @@ import Icon, {
     CaretDownOutlined,
     ControlOutlined,
     UserOutlined,
+    DollarCircleOutlined,
 } from '@ant-design/icons';
 
 import Layout from 'antd/lib/layout';
@@ -36,6 +37,7 @@ import CVATTooltip from 'components/common/cvat-tooltip';
 import { switchSettingsDialog as switchSettingsDialogAction } from 'actions/settings-actions';
 import { logoutAsync, authActions } from 'actions/auth-actions';
 import { CombinedState } from 'reducers/interfaces';
+import { getOwnedPointsAsync } from 'actions/user-assets-actions';
 import SettingsModal from './settings-modal/settings-modal';
 
 const core = getCore();
@@ -61,6 +63,7 @@ interface Tool {
 interface StateToProps {
     user: any;
     tool: Tool;
+    ownedPoints: number;
     switchSettingsShortcut: string;
     settingsDialogShown: boolean;
     changePasswordDialogShown: boolean;
@@ -90,6 +93,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
             showChangePasswordDialog: changePasswordDialogShown,
             allowChangePassword: renderChangePasswordItem,
         },
+        userAssets: { ownedPoints },
         plugins: { list },
         about: { server, packageVersion },
         shortcuts: { normalizedKeyMap },
@@ -116,6 +120,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 version: packageVersion.ui,
             },
         },
+        ownedPoints,
         switchSettingsShortcut: normalizedKeyMap.SWITCH_SETTINGS,
         settingsDialogShown,
         changePasswordDialogShown,
@@ -145,6 +150,7 @@ function HeaderContainer(props: Props): JSX.Element {
     const {
         user,
         tool,
+        ownedPoints,
         logoutFetching,
         changePasswordFetching,
         settingsDialogShown,
@@ -163,7 +169,12 @@ function HeaderContainer(props: Props): JSX.Element {
     } = consts;
 
     const history = useHistory();
+    const dispatch = useDispatch();
     const location = useLocation();
+
+    useEffect(() => {
+        dispatch(getOwnedPointsAsync());
+    }, []);
 
     function showAboutModal(): void {
         Modal.info({
@@ -235,6 +246,11 @@ function HeaderContainer(props: Props): JSX.Element {
                     Admin page
                 </Menu.Item>
             )}
+            <Menu.Item
+                icon={<DollarCircleOutlined />}
+            >
+                {`Points: ${ownedPoints}`}
+            </Menu.Item>
             <Menu.Item
                 icon={<SettingOutlined />}
                 key='settings'

@@ -36,6 +36,11 @@ export interface Project {
     preview: string;
 }
 
+export interface UserAssetsState {
+    ownedPoints: number;
+    datasets: number[];
+}
+
 export interface ProjectsState {
     initialized: boolean;
     fetching: boolean;
@@ -751,6 +756,7 @@ export interface OrganizationState {
 
 export interface CombinedState {
     auth: AuthState;
+    userAssets: UserAssetsState;
     projects: ProjectsState;
     jobs: JobsState;
     tasks: TasksState;

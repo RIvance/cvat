@@ -40,6 +40,13 @@ function build() {
      * @memberof module:API
      */
     const cvat = {
+
+        /**
+         * TODO: Add new APIs here
+         *  APIs should be implemented in `api-implementations.js`
+         *  The functions fetching data from the backend should be implemented in `server-proxy.js`
+         */
+
         /**
          * Namespace is used for an interaction with a server
          * @namespace server
@@ -415,6 +422,12 @@ function build() {
              */
             async get(filter = {}) {
                 const result = await PluginRegistry.apiWrapper(cvat.users.get, filter);
+                return result;
+            },
+
+            // temp solution, this function should be implemented in `userAssets` api
+            async getOwnedPoints() {
+                const result = await PluginRegistry.apiWrapper(cvat.users.getOwnedPoints);
                 return result;
             },
         },

@@ -140,6 +140,8 @@ const config = require('./config');
             return users;
         };
 
+        cvat.users.getOwnedPoints.implementation = async () => serverProxy.users.ownedPoints();
+
         cvat.jobs.get.implementation = async (filter) => {
             checkFilter(filter, {
                 page: isInteger,

@@ -327,7 +327,8 @@ class UserPermission(OpenPolicyAgentPermission):
             'self': 'view',
             'retrieve': 'view',
             'partial_update': 'update',
-            'destroy': 'delete'
+            'destroy': 'delete',
+            'points': 'view'
         }.get(view.action)]
 
     @classmethod

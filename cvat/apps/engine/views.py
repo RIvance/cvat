@@ -1533,8 +1533,10 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'], url_path='points')
-    def owned_points(self, request):
+    def points(self, request):
         db_user_assets = UserAssets.objects.filter(user=request.user).first()
+        if db_user_assets is None:
+            db_user_assets = UserAssets.objects.create(user=request.user, points=0)
         return Response(int(db_user_assets.points))
 
 

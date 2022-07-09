@@ -2,9 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-// Copyright (C) 2022 Intel Corporation
-//
-// SPDX-License-Identifier: MIT
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect, Provider } from 'react-redux';
