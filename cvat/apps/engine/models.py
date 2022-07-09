@@ -387,6 +387,7 @@ class Job(models.Model):
         default=StageChoice.ANNOTATION)
     state = models.CharField(max_length=32, choices=StateChoice.choices(),
         default=StateChoice.NEW)
+    # assign_time = models.DateTimeField()
 
     def get_project_id(self):
         project = self.segment.task.project
@@ -718,7 +719,7 @@ class UserAssets(models.Model):
 class ReviewRecord(models.Model):
 
     result = models.BooleanField()
-    job = models.ForeignKey(Job, on_delete=models.CASCADE, null=False)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, null=True)
     reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     # TODO! create an issue when the review result is "rejected"
     # issue = models.ForeignKey(Issue, on_delete=models.SET_NULL, null=True, default=None)

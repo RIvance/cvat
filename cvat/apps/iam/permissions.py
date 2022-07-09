@@ -799,7 +799,8 @@ class JobPermission(OpenPolicyAgentPermission):
             ('append_annotations_chunk', 'HEAD'): 'update:annotations',
             ('data', 'GET'): 'view:data',
             ('issues', 'GET'): 'view',
-            ('commits', 'GET'): 'view:commits'
+            ('commits', 'GET'): 'view:commits',
+            ('claim', 'PATCH'): 'view'
         }.get((view.action, request.method))
 
         scopes = []

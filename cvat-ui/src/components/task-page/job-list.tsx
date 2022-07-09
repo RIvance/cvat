@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -17,7 +17,10 @@ import copy from 'copy-to-clipboard';
 
 import { JobStage } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
-import UserSelector, { User } from './user-selector';
+import getCore from 'cvat-core-wrapper';
+
+const core = getCore();
+const apiBaseURL = core.config.backendAPI;
 
 interface Props {
     taskInstance: any;
@@ -225,19 +228,38 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
             className: 'cvat-text-color',
         },
         {
-            title: 'Assignee',
+            title: 'Action',
             dataIndex: 'assignee',
             key: 'assignee',
             className: 'cvat-job-item-assignee',
             render: (jobInstance: any): JSX.Element => (
-                <UserSelector
-                    className='cvat-job-assignee-selector'
-                    value={jobInstance.assignee}
-                    onSelect={(value: User | null): void => {
-                        jobInstance.assignee = value;
-                        onJobUpdate(jobInstance);
+                <Button
+                    className='cvat-button-active'
+                    onClick={(e: React.MouseEvent): void => {
+                        core.server.request(`${apiBaseURL}/jobs/${jobInstance.id}/claim`, {
+                            method: 'PATCH',
+                        });
+                        e.preventDefault();
+                        push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
                     }}
-                />
+                    disabled={
+                        // TODO! make state field readonly
+                        jobInstance.state === JobStage.ACCEPTANCE || jobInstance.assignee != null
+                    }
+                    href={`/tasks/${taskId}/jobs/${jobInstance.id}`}
+                >
+                    {(() => {
+                        if (jobInstance.stage === JobStage.ANNOTATION) {
+                            if (jobInstance.assignee != null) {
+                                return 'In Progress';
+                            }
+                            return 'Claim';
+                        } if (jobInstance.stage === JobStage.REVIEW) {
+                            return 'Review';
+                        }
+                        return 'Completed';
+                    })()}
+                </Button>
             ),
             sorter: sorter('assignee.assignee.username'),
             filters: collectUsers('assignee'),

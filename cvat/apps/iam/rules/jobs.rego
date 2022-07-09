@@ -39,13 +39,13 @@ is_job_assignee {
     input.resource.assignee.id == input.auth.user.id
 }
 
-is_task_owner {
-    input.resource.task.owner.id == input.auth.user.id
-}
-
-is_task_assignee {
-    input.resource.task.assignee.id == input.auth.user.id
-}
+# is_task_owner {
+#     input.resource.task.owner.id == input.auth.user.id
+# }
+#
+# is_task_assignee {
+#     input.resource.task.assignee.id == input.auth.user.id
+# }
 
 is_project_owner {
     input.resource.project.owner.id == input.auth.user.id
@@ -63,21 +63,21 @@ is_project_staff {
     is_project_assignee
 }
 
-is_task_staff {
-    is_project_staff
-}
+# is_task_staff {
+#     is_project_staff
+# }
 
-is_task_staff {
-    is_task_owner
-}
+# is_task_staff {
+#     is_task_owner
+# }
 
-is_task_staff {
-    is_task_assignee
-}
+# is_task_staff {
+#     is_task_assignee
+# }
 
-is_job_staff {
-    is_task_staff
-}
+# is_job_staff {
+#     is_task_staff
+# }
 
 is_job_staff {
     is_job_assignee
@@ -114,10 +114,11 @@ filter = [] { # Django Q object to filter list of entries
     user := input.auth.user
     qobject := [
         {"assignee_id": user.id},
-        {"segment__task__owner_id": user.id}, "|",
-        {"segment__task__assignee_id": user.id}, "|",
-        {"segment__task__project__owner_id": user.id}, "|",
-        {"segment__task__project__assignee_id": user.id}, "|"]
+#        {"segment__task__owner_id": user.id}, "|",
+#        {"segment__task__assignee_id": user.id}, "|",
+#        {"segment__task__project__owner_id": user.id}, "|",
+#        {"segment__task__project__assignee_id": user.id}, "|"
+    ]
 } else = qobject {
     utils.is_organization
     utils.has_perm(utils.USER)
@@ -141,7 +142,7 @@ filter = [] { # Django Q object to filter list of entries
 allow {
     { utils.VIEW, utils.VIEW_ANNOTATIONS, utils.VIEW_DATA, utils.VIEW_COMMITS }[input.scope]
     utils.is_sandbox
-    is_job_staff
+    # is_job_staff
 }
 
 allow {
@@ -187,7 +188,7 @@ allow {
     { utils.UPDATE_STAGE, utils.UPDATE_ASSIGNEE }[input.scope]
     utils.is_sandbox
     utils.has_perm(utils.WORKER)
-    is_task_staff
+#    is_task_staff
 }
 
 allow {
@@ -202,5 +203,5 @@ allow {
     input.auth.organization.id == input.resource.organization.id
     utils.has_perm(utils.WORKER)
     organizations.has_perm(organizations.WORKER)
-    is_task_staff
+#    is_task_staff
 }

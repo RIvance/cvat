@@ -48,7 +48,7 @@ from cvat.apps.engine.frame_provider import FrameProvider
 from cvat.apps.engine.media_extractors import ImageListReader
 from cvat.apps.engine.mime_types import mimetypes
 from cvat.apps.engine.models import (
-    Job, ReviewRecord, StageChoice, StateChoice, StatusChoice, Task, Project, Issue, Data,
+    Job, ReviewRecord, Segment, StageChoice, StateChoice, StatusChoice, Task, Project, Issue, Data,
     Comment, StorageMethodChoice, StorageChoice, Image,
     CloudProviderChoice, UserAssets
 )
@@ -640,6 +640,12 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
             db_project.save()
             assert instance.organization == db_project.organization
 
+        db_user_assets = UserAssets.objects.filter(user=self.request.user).first()
+        if db_user_assets is None:
+            db_user_assets = UserAssets.objects.create(user=self.request.user, points=0)
+        db_user_assets.datasets.add(instance)
+        db_user_assets.save()
+
     def perform_destroy(self, instance):
         task_dirname = instance.get_task_dirname()
         super().perform_destroy(instance)
@@ -825,6 +831,12 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
     def annotations(self, request, pk):
         self._object = self.get_object() # force to call check_object_permissions
         if request.method == 'GET':
+
+            db_user_assets = UserAssets.objects.filter(user=request.user).first()
+            user_owned_datasets: List[Task] = list(db_user_assets.datasets)
+            if self._object not in user_owned_datasets:
+                return Response("You do not own this dataset", status=status.HTTP_403_FORBIDDEN)
+
             format_name = request.query_params.get('format')
             if format_name:
                 return _export_annotations(db_instance=self._object,
@@ -981,7 +993,7 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
         purchaser = self.request.user
         db_user_assets: Union[UserAssets, None] = UserAssets.objects.filter(user=purchaser).first()
 
-        if db_user_assets == None:
+        if db_user_assets is None:
             UserAssets.objects.create(user=purchaser)
             return Response("You don't have enough points", status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -1223,10 +1235,18 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
         serializer = JobCommitSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['PATCH'], url_path='takeup')
-    def takeup(self, request, pk):
+    @action(detail=True, methods=['PATCH'], url_path='claim')
+    def claim(self, request, pk):
         db_job: Job = self.get_object()
         rq_user = self.request.user
+
+        # TODO! filter time
+
+        if db_job.assignee != None:
+            return Response(
+                "This job is already taken by someone",
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         if Job.objects.filter(status=StatusChoice.ANNOTATION, assignee=rq_user).count() > 3:
             return Response(
@@ -1237,6 +1257,8 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
         db_job.assignee = rq_user
         db_job.save()
 
+        return Response(status=status.HTTP_200_OK)
+
 
     @action(detail=True, methods=['PUT'], url_path='review')
     def review(self, request, pk):
@@ -1245,9 +1267,31 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
             job.status = StatusChoice.COMPLETED
             job.state = StateChoice.COMPLETED
             job.save()
+
+            db_task: Task = job.segment.task
+            db_segments: List[Segment] = list(Segment.objects.filter(task=db_task).all())
+            db_job_query = Job.objects.filter(segment__in=db_segments) \
+                .filter(stage=StageChoice.ACCEPTANCE)
+
+            if db_job_query.count() == len(db_segments):
+                db_task.status = StatusChoice.COMPLETED
+                # db_jobs: List[Job] = list(Job.objects.filter(segment__in=db_segments).all())
+                for segment in db_segments:
+                    db_job: Union[Job, None] = Job.objects.filter(segment=segment).first()
+                    if db_job is not None:
+                        db_user_assets: Union[UserAssets, None] = UserAssets.objects.filter(user=job.assignee).first()
+                        if db_user_assets is not None:
+                            db_user_assets = UserAssets.objects.create(user=job.assignee)
+                        assert(db_user_assets is not None)
+                        db_user_assets.points += segment.stop_frame - segment.start_frame
+                        db_user_assets.save()
+
         def reject_job(job: Job):
-            # TODO!
-            pass
+            job.assignee = None
+            job.stage = StageChoice.ANNOTATION
+            job.status = StatusChoice.ANNOTATION
+            job.state = StateChoice.IN_PROGRESS
+            job.save()
 
         db_job: Job = self.get_object()
         rq_user = self.request.user
@@ -1487,6 +1531,12 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
         serializer_class = self.get_serializer_class()
         serializer = serializer_class(request.user, context={ "request": request })
         return Response(serializer.data)
+
+    @action(detail=False, methods=['GET'], url_path='points')
+    def owned_points(self, request):
+        db_user_assets = UserAssets.objects.filter(user=request.user).first()
+        return Response(int(db_user_assets.points))
+
 
 @extend_schema(tags=['cloud storages'])
 @extend_schema_view(

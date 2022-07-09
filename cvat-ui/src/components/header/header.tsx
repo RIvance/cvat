@@ -18,16 +18,14 @@ import Icon, {
     CaretDownOutlined,
     ControlOutlined,
     UserOutlined,
-    TeamOutlined,
-    PlusOutlined,
 } from '@ant-design/icons';
+
 import Layout from 'antd/lib/layout';
 import Button from 'antd/lib/button';
 import Menu from 'antd/lib/menu';
 import Dropdown from 'antd/lib/dropdown';
 import Modal from 'antd/lib/modal';
 import Text from 'antd/lib/typography/Text';
-import Select from 'antd/lib/select';
 
 import getCore from 'cvat-core-wrapper';
 import consts from 'consts';
@@ -157,9 +155,7 @@ function HeaderContainer(props: Props): JSX.Element {
         renderChangePasswordItem,
         isAnalyticsPluginActive,
         isModelsPluginActive,
-        organizationsFetching,
         currentOrganization,
-        organizationsList,
     } = props;
 
     const {
@@ -224,27 +220,6 @@ function HeaderContainer(props: Props): JSX.Element {
         });
     }
 
-    const resetOrganization = (): void => {
-        localStorage.removeItem('currentOrganization');
-        if (/\d+$/.test(window.location.pathname)) {
-            window.location.pathname = '/';
-        } else {
-            window.location.reload();
-        }
-    };
-
-    const setNewOrganization = (organization: any): void => {
-        if (!currentOrganization || currentOrganization.slug !== organization.slug) {
-            localStorage.setItem('currentOrganization', organization.slug);
-            if (/\d+$/.test(window.location.pathname)) {
-                // a resource is opened (task/job/etc.)
-                window.location.pathname = '/';
-            } else {
-                window.location.reload();
-            }
-        }
-    };
-
     const userMenu = (
         <Menu className='cvat-header-menu'>
             {user.isStaff && (
@@ -260,83 +235,6 @@ function HeaderContainer(props: Props): JSX.Element {
                     Admin page
                 </Menu.Item>
             )}
-            <Menu.SubMenu
-                disabled={organizationsFetching}
-                key='organization'
-                title='Organization'
-                icon={organizationsFetching ? <LoadingOutlined /> : <TeamOutlined />}
-            >
-                {currentOrganization ? (
-                    <Menu.Item icon={<SettingOutlined />} key='open_organization' onClick={() => history.push('/organization')} className='cvat-header-menu-open-organization'>
-                        Settings
-                    </Menu.Item>
-                ) : null}
-                <Menu.Item icon={<PlusOutlined />} key='create_organization' onClick={() => history.push('/organizations/create')} className='cvat-header-menu-create-organization'>Create</Menu.Item>
-                { organizationsList.length > 5 ? (
-                    <Menu.Item
-                        key='switch_organization'
-                        onClick={() => {
-                            Modal.confirm({
-                                title: 'Select an organization',
-                                okButtonProps: {
-                                    style: { display: 'none' },
-                                },
-                                content: (
-                                    <Select
-                                        showSearch
-                                        className='cvat-modal-organization-selector'
-                                        value={currentOrganization?.slug}
-                                        onChange={(value: string) => {
-                                            if (value === '$personal') {
-                                                resetOrganization();
-                                                return;
-                                            }
-
-                                            const [organization] = organizationsList
-                                                .filter((_organization): boolean => _organization.slug === value);
-                                            if (organization) {
-                                                setNewOrganization(organization);
-                                            }
-                                        }}
-                                    >
-                                        <Select.Option value='$personal'>Personal workspace</Select.Option>
-                                        {organizationsList.map((organization: any): JSX.Element => {
-                                            const { slug } = organization;
-                                            return <Select.Option key={slug} value={slug}>{slug}</Select.Option>;
-                                        })}
-                                    </Select>
-                                ),
-                            });
-                        }}
-                    >
-                        Switch organization
-                    </Menu.Item>
-                ) : (
-                    <>
-                        <Menu.Divider />
-                        <Menu.ItemGroup>
-                            <Menu.Item
-                                className={!currentOrganization ?
-                                    'cvat-header-menu-active-organization-item' : 'cvat-header-menu-organization-item'}
-                                key='$personal'
-                                onClick={resetOrganization}
-                            >
-                                Personal workspace
-                            </Menu.Item>
-                            {organizationsList.map((organization: any): JSX.Element => (
-                                <Menu.Item
-                                    className={currentOrganization?.slug === organization.slug ?
-                                        'cvat-header-menu-active-organization-item' : 'cvat-header-menu-organization-item'}
-                                    key={organization.slug}
-                                    onClick={() => setNewOrganization(organization)}
-                                >
-                                    {organization.slug}
-                                </Menu.Item>
-                            ))}
-                        </Menu.ItemGroup>
-                    </>
-                )}
-            </Menu.SubMenu>
             <Menu.Item
                 icon={<SettingOutlined />}
                 key='settings'
