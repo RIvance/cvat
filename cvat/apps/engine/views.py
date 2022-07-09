@@ -6,6 +6,7 @@ import errno
 import io
 import os
 import os.path as osp
+from typing import List, Union
 import pytz
 import shutil
 import traceback
@@ -47,9 +48,9 @@ from cvat.apps.engine.frame_provider import FrameProvider
 from cvat.apps.engine.media_extractors import ImageListReader
 from cvat.apps.engine.mime_types import mimetypes
 from cvat.apps.engine.models import (
-    Job, Task, Project, Issue, Data,
+    Job, ReviewRecord, StageChoice, StateChoice, StatusChoice, Task, Project, Issue, Data,
     Comment, StorageMethodChoice, StorageChoice, Image,
-    CloudProviderChoice
+    CloudProviderChoice, UserAssets
 )
 from cvat.apps.engine.models import CloudStorage as CloudStorageModel
 from cvat.apps.engine.serializers import (
@@ -59,7 +60,8 @@ from cvat.apps.engine.serializers import (
     LogEventSerializer, ProjectSerializer, ProjectSearchSerializer,
     RqStatusSerializer, TaskSerializer, UserSerializer, PluginsSerializer, IssueReadSerializer,
     IssueWriteSerializer, CommentReadSerializer, CommentWriteSerializer, CloudStorageWriteSerializer,
-    CloudStorageReadSerializer, DatasetFileSerializer, JobCommitSerializer)
+    CloudStorageReadSerializer, DatasetFileSerializer, JobCommitSerializer
+)
 
 from utils.dataset_manifest import ImageManifestManager
 from cvat.apps.engine.utils import av_scan_paths
@@ -973,6 +975,41 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
             filename=request.query_params.get("filename", "").lower(),
         )
 
+    @action(methods=['PUT'], url_path='purchase', detail=True)
+    def purchase(self, request, pk):
+
+        purchaser = self.request.user
+        db_user_assets: Union[UserAssets, None] = UserAssets.objects.filter(user=purchaser).first()
+
+        if db_user_assets == None:
+            UserAssets.objects.create(user=purchaser)
+            return Response("You don't have enough points", status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        user_assets: UserAssets = db_user_assets
+
+        db_task: models.Task = self.get_object()
+        db_data: models.Data = db_task.data
+
+        if db_task.status != StatusChoice.COMPLETED:
+            return Response("This task is still in progress", status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if UserAssets.objects.filter(datasets=db_task).count() > 0:
+            return Response("You have already purchased this dataset", status=status.HTTP_304_NOT_MODIFIED)
+
+        num_frames = db_data.stop_frame - db_data.start_frame
+        cost = int(num_frames / 10)
+
+        owned_points = int(user_assets.points)
+
+        if owned_points < cost:
+            user_assets.points = owned_points - cost
+            user_assets.datasets.add(db_task)
+            user_assets.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response("You don't have enough points", status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
 @extend_schema(tags=['jobs'])
 @extend_schema_view(
     retrieve=extend_schema(
@@ -1185,6 +1222,54 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
 
         serializer = JobCommitSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['PATCH'], url_path='takeup')
+    def takeup(self, request, pk):
+        db_job: Job = self.get_object()
+        rq_user = self.request.user
+
+        if Job.objects.filter(status=StatusChoice.ANNOTATION, assignee=rq_user).count() > 3:
+            return Response(
+                "Each user can only takeup 3 tasks at the same time",
+                status=status.HTTP_304_NOT_MODIFIED
+            )
+
+        db_job.assignee = rq_user
+        db_job.save()
+
+
+    @action(detail=True, methods=['PUT'], url_path='review')
+    def review(self, request, pk):
+        def complete_job(job: Job):
+            job.stage = StageChoice.ACCEPTANCE
+            job.status = StatusChoice.COMPLETED
+            job.state = StateChoice.COMPLETED
+            job.save()
+        def reject_job(job: Job):
+            # TODO!
+            pass
+
+        db_job: Job = self.get_object()
+        rq_user = self.request.user
+
+        if db_job.status != StatusChoice.VALIDATION:
+            return Response("This job is not in review stage", status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        ReviewRecord.objects.create(result=request.data.result, job=db_job, reviewer=rq_user)
+        reviews: List[ReviewRecord] = list(ReviewRecord.objects.filter(job=db_job).all())
+        review_results: List[bool] = list(map(lambda review: bool(review.result), reviews))
+
+        if len(reviews) == 2:
+            if all(review_results):
+                complete_job(db_job)
+        elif len(reviews) == 3:
+            if review_results.count(True) >= 2:
+                complete_job(db_job)
+            else:
+                reject_job(db_job)
+
+        return Response(status=status.HTTP_200_OK)
+
 
 @extend_schema(tags=['issues'])
 @extend_schema_view(

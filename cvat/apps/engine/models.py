@@ -703,3 +703,25 @@ class CloudStorage(models.Model):
 
     def get_key_file_path(self):
         return os.path.join(self.get_storage_dirname(), 'key.json')
+
+
+class UserAssets(models.Model):
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    points = models.IntegerField(default=0)
+    datasets = models.ManyToManyField(Task, default=None)
+
+    class Meta:
+        default_permissions = ()
+
+
+class ReviewRecord(models.Model):
+
+    result = models.BooleanField()
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, null=False)
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    # TODO! create an issue when the review result is "rejected"
+    # issue = models.ForeignKey(Issue, on_delete=models.SET_NULL, null=True, default=None)
+
+    class Meta:
+        default_permissions = ()

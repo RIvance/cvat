@@ -657,6 +657,7 @@ class TaskPermission(OpenPolicyAgentPermission):
             ('jobs', 'GET'): 'view',
             ('import_backup', 'POST'): 'import:backup',
             ('export_backup', 'GET'): 'export:backup',
+            ('purchase', 'PUT'): 'view',
         }.get((view.action, request.method))
 
         scopes = []

@@ -3,10 +3,13 @@
 # SPDX-License-Identifier: MIT
 
 import os
+from pyexpat import model
 import re
 import shutil
 
 from tempfile import NamedTemporaryFile
+from attr import fields
+from msrest import Serializer
 
 from rest_framework import serializers, exceptions
 from django.contrib.auth.models import User, Group
@@ -1138,3 +1141,17 @@ class RelatedFileSerializer(serializers.ModelSerializer):
         model = models.RelatedFile
         fields = '__all__'
         read_only_fields = ('path',)
+
+
+class UserAssetsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.UserAssets
+        fields = ('points', )
+
+
+class ReviewRecordSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.ReviewRecord
+        fields = ('result', 'job', 'reviewer')
