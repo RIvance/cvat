@@ -12,12 +12,13 @@ import Dropdown from 'antd/lib/dropdown';
 
 import AnnotationMenuContainer from 'containers/annotation-page/top-bar/annotation-menu';
 import {
-    MainMenuIcon, SaveIcon, UndoIcon, RedoIcon,
+    MainMenuIcon, SaveIcon, UndoIcon, RedoIcon, CheckIcon,
 } from 'icons';
 import { ActiveControl, ToolsBlockerState } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
 
 interface Props {
+    reviewOnly: boolean;
     saving: boolean;
     savingStatuses: string[];
     undoAction?: string;
@@ -30,6 +31,9 @@ interface Props {
     toolsBlockerState: ToolsBlockerState;
     activeControl: ActiveControl;
     onSaveAnnotation(): void;
+    onFinishJob(): void;
+    onReviewAccept(): void; // review mode
+    onReviewReject(): void; // review mode
     onUndoClick(): void;
     onRedoClick(): void;
     onFinishDraw(): void;
@@ -38,6 +42,7 @@ interface Props {
 
 function LeftGroup(props: Props): JSX.Element {
     const {
+        reviewOnly,
         saving,
         savingStatuses,
         undoAction,
@@ -50,6 +55,9 @@ function LeftGroup(props: Props): JSX.Element {
         activeControl,
         toolsBlockerState,
         onSaveAnnotation,
+        onFinishJob,
+        onReviewAccept,
+        onReviewReject,
         onUndoClick,
         onRedoClick,
         onFinishDraw,
@@ -79,7 +87,7 @@ function LeftGroup(props: Props): JSX.Element {
                 </Timeline>
             </Modal>
             <Col className='cvat-annotation-header-left-group'>
-                <Dropdown overlay={<AnnotationMenuContainer />}>
+                <Dropdown overlay={<AnnotationMenuContainer reviewOnly={reviewOnly} />}>
                     <Button type='link' className='cvat-annotation-header-button'>
                         <Icon component={MainMenuIcon} />
                         Menu
@@ -95,28 +103,65 @@ function LeftGroup(props: Props): JSX.Element {
                         {saving ? 'Saving...' : 'Save'}
                     </Button>
                 </CVATTooltip>
-                <CVATTooltip overlay={`Undo: ${undoAction} ${undoShortcut}`}>
-                    <Button
-                        style={{ pointerEvents: undoAction ? 'initial' : 'none', opacity: undoAction ? 1 : 0.5 }}
-                        type='link'
-                        className='cvat-annotation-header-button'
-                        onClick={onUndoClick}
-                    >
-                        <Icon component={UndoIcon} />
-                        <span>Undo</span>
-                    </Button>
-                </CVATTooltip>
-                <CVATTooltip overlay={`Redo: ${redoAction} ${redoShortcut}`}>
-                    <Button
-                        style={{ pointerEvents: redoAction ? 'initial' : 'none', opacity: redoAction ? 1 : 0.5 }}
-                        type='link'
-                        className='cvat-annotation-header-button'
-                        onClick={onRedoClick}
-                    >
-                        <Icon component={RedoIcon} />
-                        Redo
-                    </Button>
-                </CVATTooltip>
+                {reviewOnly ? (
+                    <>
+                        <CVATTooltip overlay='Finish Annotation'>
+                            <Button
+                                type='link'
+                                className='cvat-annotation-header-button'
+                                onClick={reviewOnly ? undefined : onFinishJob}
+                            >
+                                <Icon component={CheckIcon} />
+                                Finish
+                            </Button>
+                        </CVATTooltip>
+                        <CVATTooltip overlay={`Undo: ${undoAction} ${undoShortcut}`}>
+                            <Button
+                                style={{ pointerEvents: undoAction ? 'initial' : 'none', opacity: undoAction ? 1 : 0.5 }}
+                                type='link'
+                                className='cvat-annotation-header-button'
+                                onClick={onUndoClick}
+                            >
+                                <Icon component={UndoIcon} />
+                                <span>Undo</span>
+                            </Button>
+                        </CVATTooltip>
+                        <CVATTooltip overlay={`Redo: ${redoAction} ${redoShortcut}`}>
+                            <Button
+                                style={{ pointerEvents: redoAction ? 'initial' : 'none', opacity: redoAction ? 1 : 0.5 }}
+                                type='link'
+                                className='cvat-annotation-header-button'
+                                onClick={onRedoClick}
+                            >
+                                <Icon component={RedoIcon} />
+                            Redo
+                            </Button>
+                        </CVATTooltip>
+                    </>
+                ) : /* else if not reviewOnly */ (
+                    <>
+                        <CVATTooltip overlay='Finish review and accept the annotation'>
+                            <Button
+                                type='link'
+                                className='cvat-annotation-header-button'
+                                onClick={onReviewAccept}
+                            >
+                                <Icon component={CheckIcon} />
+                                Accept
+                            </Button>
+                        </CVATTooltip>
+                        <CVATTooltip overlay='Finish review and reject the annotation'>
+                            <Button
+                                type='link'
+                                className='cvat-annotation-header-button'
+                                onClick={onReviewReject}
+                            >
+                                <Icon component={CheckIcon} />
+                                Reject
+                            </Button>
+                        </CVATTooltip>
+                    </>
+                )}
                 {includesDoneButton ? (
                     <CVATTooltip overlay={`Press "${drawShortcut}" to finish`}>
                         <Button type='link' className='cvat-annotation-header-button' onClick={onFinishDraw}>

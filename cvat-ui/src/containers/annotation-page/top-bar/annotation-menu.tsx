@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -21,6 +21,10 @@ import { exportActions } from 'actions/export-actions';
 import getCore from 'cvat-core-wrapper';
 
 const core = getCore();
+
+interface OwnProps {
+    reviewOnly: boolean;
+}
 
 interface StateToProps {
     annotationFormats: any;
@@ -87,10 +91,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
     };
 }
 
-type Props = StateToProps & DispatchToProps & RouteComponentProps;
+type Props = StateToProps & DispatchToProps & RouteComponentProps & OwnProps;
 
 function AnnotationMenuContainer(props: Props): JSX.Element {
     const {
+        reviewOnly,
         jobInstance,
         stopFrame,
         annotationFormats: { loaders, dumpers },
@@ -136,6 +141,7 @@ function AnnotationMenuContainer(props: Props): JSX.Element {
 
     return (
         <AnnotationMenuComponent
+            reviewOnly={reviewOnly}
             taskMode={jobInstance.mode}
             loaders={loaders}
             dumpers={dumpers}

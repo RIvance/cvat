@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -24,6 +24,7 @@ interface OwnProps {
 }
 
 interface StateToProps {
+    user: any;
     annotationFormats: any;
     loadActivity: string | null;
     inferenceIsActive: boolean;
@@ -52,6 +53,7 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
     } = state;
 
     return {
+        user: state.auth.user,
         loadActivity: tid in loads ? loads[tid] : null,
         annotationFormats,
         inferenceIsActive: tid in state.models.inferences,
@@ -84,6 +86,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
 
 function ActionsMenuContainer(props: OwnProps & StateToProps & DispatchToProps): JSX.Element {
     const {
+        user,
         taskInstance,
         annotationFormats: { loaders, dumpers },
         loadActivity,
@@ -104,6 +107,7 @@ function ActionsMenuContainer(props: OwnProps & StateToProps & DispatchToProps):
         } else if (action === Actions.DELETE_TASK) {
             deleteTask(taskInstance);
         } else if (action === Actions.OPEN_BUG_TRACKER) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             window.open(`${taskInstance.bugTracker}`, '_blank');
         } else if (action === Actions.RUN_AUTO_ANNOTATION) {
             openRunModelWindow(taskInstance);
@@ -123,6 +127,7 @@ function ActionsMenuContainer(props: OwnProps & StateToProps & DispatchToProps):
 
     return (
         <ActionsMenuComponent
+            isDisabled={!user.isStaff && taskInstance.owner.id !== user.id}
             taskID={taskInstance.id}
             taskMode={taskInstance.mode}
             bugTracker={taskInstance.bugTracker}
@@ -130,7 +135,9 @@ function ActionsMenuContainer(props: OwnProps & StateToProps & DispatchToProps):
             dumpers={dumpers}
             loadActivity={loadActivity}
             inferenceIsActive={inferenceIsActive}
+            // eslint-disable-next-line react/jsx-no-bind
             onClickMenu={onClickMenu}
+            // eslint-disable-next-line react/jsx-no-bind
             onUploadAnnotations={onUploadAnnotations}
             taskDimension={taskInstance.dimension}
             exportIsActive={exportIsActive}

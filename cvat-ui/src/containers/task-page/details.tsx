@@ -29,6 +29,8 @@ interface DispatchToProps {
 
 function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
     const { list } = state.plugins;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const [taskProject] = state.projects.current.filter((project) => project.id === own.task.instance.projectId);
 
     return {
@@ -38,6 +40,8 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
         activeInference: state.models.inferences[own.task.instance.id] || null,
         projectSubsets: taskProject ?
             ([
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 ...new Set(taskProject.tasks.map((task: any) => task.subset).filter((subset: string) => subset)),
             ] as string[]) :
             [],
@@ -62,6 +66,7 @@ function TaskPageContainer(props: StateToProps & DispatchToProps & OwnProps): JS
 
     return (
         <DetailsComponent
+            isEditable={user.isStaff || user.id === task.instance.owner.id}
             dumpers={dumpers}
             user={user}
             previewImage={task.preview}

@@ -2,20 +2,19 @@
 //
 // SPDX-License-Identifier: MIT
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { withRouter } from 'react-router-dom';
 import { Row, Col } from 'antd/lib/grid';
-import { LoadingOutlined, QuestionCircleOutlined, CopyOutlined } from '@ant-design/icons';
+import { CopyOutlined } from '@ant-design/icons';
 import { ColumnFilterItem } from 'antd/lib/table/interface';
 import Table from 'antd/lib/table';
 import Button from 'antd/lib/button';
-import Select from 'antd/lib/select';
 import Text from 'antd/lib/typography/Text';
 import moment from 'moment';
 import copy from 'copy-to-clipboard';
 
-import { JobStage } from 'reducers/interfaces';
+import { JobStage, JobState } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import getCore from 'cvat-core-wrapper';
 
@@ -27,67 +26,66 @@ interface Props {
     onJobUpdate(jobInstance: any): void;
 }
 
-function ReviewSummaryComponent({ jobInstance }: { jobInstance: any }): JSX.Element {
-    const [summary, setSummary] = useState<Record<string, any> | null>(null);
-    const [error, setError] = useState<any>(null);
-    useEffect(() => {
-        setError(null);
-        jobInstance
-            .issues(jobInstance.id)
-            .then((issues: any[]) => {
-                setSummary({
-                    issues_unsolved: issues.filter((issue) => !issue.resolved_date).length,
-                    issues_resolved: issues.filter((issue) => issue.resolved_date).length,
-                });
-            })
-            .catch((_error: any) => {
-                // eslint-disable-next-line
-                console.log(_error);
-                setError(_error);
-            });
-    }, []);
-
-    if (!summary) {
-        if (error) {
-            if (error.toString().includes('403')) {
-                return <p>You do not have permissions</p>;
-            }
-
-            return <p>Could not fetch, check console output</p>;
-        }
-
-        return (
-            <>
-                <p>Loading.. </p>
-                <LoadingOutlined />
-            </>
-        );
-    }
-
-    return (
-        <table className='cvat-review-summary-description'>
-            <tbody>
-                <tr>
-                    <td>
-                        <Text strong>Unsolved issues</Text>
-                    </td>
-                    <td>{summary.issues_unsolved}</td>
-                </tr>
-                <tr>
-                    <td>
-                        <Text strong>Resolved issues</Text>
-                    </td>
-                    <td>{summary.issues_resolved}</td>
-                </tr>
-            </tbody>
-        </table>
-    );
-}
+// function ReviewSummaryComponent({ jobInstance }: { jobInstance: any }): JSX.Element {
+//     const [summary, setSummary] = useState<Record<string, any> | null>(null);
+//     const [error, setError] = useState<any>(null);
+//     useEffect(() => {
+//         setError(null);
+//         jobInstance
+//             .issues(jobInstance.id)
+//             .then((issues: any[]) => {
+//                 setSummary({
+//                     issues_unsolved: issues.filter((issue) => !issue.resolved_date).length,
+//                     issues_resolved: issues.filter((issue) => issue.resolved_date).length,
+//                 });
+//             })
+//             .catch((_error: any) => {
+//                 // eslint-disable-next-line
+//                 console.log(_error);
+//                 setError(_error);
+//             });
+//     }, []);
+//
+//     if (!summary) {
+//         if (error) {
+//             if (error.toString().includes('403')) {
+//                 return <p>You do not have permissions</p>;
+//             }
+//
+//             return <p>Could not fetch, check console output</p>;
+//         }
+//
+//         return (
+//             <>
+//                 <p>Loading.. </p>
+//                 <LoadingOutlined />
+//             </>
+//         );
+//     }
+//
+//     return (
+//         <table className='cvat-review-summary-description'>
+//             <tbody>
+//                 <tr>
+//                     <td>
+//                         <Text strong>Unsolved issues</Text>
+//                     </td>
+//                     <td>{summary.issues_unsolved}</td>
+//                 </tr>
+//                 <tr>
+//                     <td>
+//                         <Text strong>Resolved issues</Text>
+//                     </td>
+//                     <td>{summary.issues_resolved}</td>
+//                 </tr>
+//             </tbody>
+//         </table>
+//     );
+// }
 
 function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
     const {
         taskInstance,
-        onJobUpdate,
         history: { push },
     } = props;
 
@@ -159,39 +157,19 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
             className: 'cvat-text-color cvat-job-item-frames',
         },
         {
-            title: 'Stage',
+            title: 'Contributor',
             dataIndex: 'stage',
             key: 'stage',
             className: 'cvat-job-item-stage',
             render: (jobInstance: any): JSX.Element => {
-                const { stage } = jobInstance;
+                const { assignee } = jobInstance;
 
                 return (
-                    <div>
-                        <Select
-                            value={stage}
-                            onChange={(newValue: string) => {
-                                jobInstance.stage = newValue;
-                                onJobUpdate(jobInstance);
-                            }}
-                        >
-                            <Select.Option value={JobStage.ANNOTATION}>{JobStage.ANNOTATION}</Select.Option>
-                            <Select.Option value={JobStage.REVIEW}>{JobStage.REVIEW}</Select.Option>
-                            <Select.Option value={JobStage.ACCEPTANCE}>{JobStage.ACCEPTANCE}</Select.Option>
-                        </Select>
-                        <CVATTooltip title={<ReviewSummaryComponent jobInstance={jobInstance} />}>
-                            <QuestionCircleOutlined />
-                        </CVATTooltip>
-                    </div>
+                    <Text>
+                        { assignee === null ? '' : assignee.username }
+                    </Text>
                 );
             },
-            sorter: sorter('stage.stage'),
-            filters: [
-                { text: 'annotation', value: 'annotation' },
-                { text: 'validation', value: 'validation' },
-                { text: 'acceptance', value: 'acceptance' },
-            ],
-            onFilter: (value: string | number | boolean, record: any) => record.stage.stage === value,
         },
         {
             title: 'State',
@@ -243,8 +221,7 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
                         push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
                     }}
                     disabled={
-                        // TODO! make state field readonly
-                        jobInstance.state === JobStage.ACCEPTANCE || jobInstance.assignee != null
+                        jobInstance.state === JobState.COMPLETED || jobInstance.assignee != null
                     }
                     href={`/tasks/${taskId}/jobs/${jobInstance.id}`}
                 >
@@ -253,8 +230,9 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
                             if (jobInstance.assignee != null) {
                                 return 'In Progress';
                             }
-                            return 'Claim';
-                        } if (jobInstance.stage === JobStage.REVIEW) {
+                            return 'Contribute';
+                        }
+                        if (jobInstance.stage === JobStage.REVIEW) {
                             return 'Review';
                         }
                         return 'Completed';

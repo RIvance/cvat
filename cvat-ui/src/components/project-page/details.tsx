@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -12,7 +12,7 @@ import Text from 'antd/lib/typography/Text';
 import getCore from 'cvat-core-wrapper';
 import { updateProjectAsync } from 'actions/projects-actions';
 import LabelsEditor from 'components/labels-editor/labels-editor';
-import BugTrackerEditor from 'components/task-page/bug-tracker-editor';
+// import BugTrackerEditor from 'components/task-page/bug-tracker-editor';
 import UserSelector from 'components/task-page/user-selector';
 
 const core = getCore();
@@ -53,13 +53,13 @@ export default function DetailsComponent(props: DetailsComponentProps): JSX.Elem
                         {project.owner ? ` by ${project.owner.username}` : null}
                         {` on ${moment(project.createdDate).format('MMMM Do YYYY')}`}
                     </Text>
-                    <BugTrackerEditor
-                        instance={project}
-                        onChange={(bugTracker): void => {
-                            project.bugTracker = bugTracker;
-                            dispatch(updateProjectAsync(project));
-                        }}
-                    />
+                    {/* <BugTrackerEditor */}
+                    {/*    instance={project} */}
+                    {/*    onChange={(bugTracker): void => { */}
+                    {/*        project.bugTracker = bugTracker; */}
+                    {/*        dispatch(updateProjectAsync(project)); */}
+                    {/*    }} */}
+                    {/* /> */}
                 </Col>
                 <Col>
                     <Text type='secondary'>Assigned to</Text>
@@ -73,6 +73,7 @@ export default function DetailsComponent(props: DetailsComponentProps): JSX.Elem
                 </Col>
             </Row>
             <LabelsEditor
+                isEditable
                 labels={project.labels.map((label: any): string => label.toJSON())}
                 onSubmit={(labels: any[]): void => {
                     project.labels = labels.map((labelData): any => new core.classes.Label(labelData));

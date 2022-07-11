@@ -13,38 +13,44 @@ import { Label } from './common';
 interface ConstructorViewerItemProps {
     label: Label;
     color: string;
+    isEditable: boolean;
     onUpdate: (label: Label) => void;
     onDelete: (label: Label) => void;
 }
 
 export default function ConstructorViewerItem(props: ConstructorViewerItemProps): JSX.Element {
     const {
-        color, label, onUpdate, onDelete,
+        color, label, isEditable, onUpdate, onDelete,
     } = props;
 
     return (
         <div style={{ background: color || consts.NEW_LABEL_COLOR }} className='cvat-constructor-viewer-item'>
             <Text>{label.name}</Text>
-            <CVATTooltip title='Update attributes'>
-                <span
-                    role='button'
-                    tabIndex={0}
-                    onClick={(): void => onUpdate(label)}
-                    onKeyPress={(): boolean => false}
-                >
-                    <EditOutlined />
-                </span>
-            </CVATTooltip>
-            <CVATTooltip title='Delete label'>
-                <span
-                    role='button'
-                    tabIndex={0}
-                    onClick={(): void => onDelete(label)}
-                    onKeyPress={(): boolean => false}
-                >
-                    <DeleteOutlined />
-                </span>
-            </CVATTooltip>
+            {isEditable && (
+                <>
+                    <CVATTooltip title='Update attributes'>
+                        <span
+                            role='button'
+                            tabIndex={0}
+                            onClick={(): void => onUpdate(label)}
+                            onKeyPress={(): boolean => false}
+                        >
+                            <EditOutlined />
+                        </span>
+                    </CVATTooltip>
+                    <CVATTooltip title='Delete label'>
+                        <span
+                            role='button'
+                            tabIndex={0}
+                            onClick={(): void => onDelete(label)}
+                            onKeyPress={(): boolean => false}
+                        >
+                            <DeleteOutlined />
+                        </span>
+                    </CVATTooltip>
+                </>
+            )}
+            {!isEditable && <span />}
         </div>
     );
 }

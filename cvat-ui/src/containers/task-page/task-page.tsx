@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -14,6 +14,7 @@ import { Task, CombinedState } from 'reducers/interfaces';
 type Props = RouteComponentProps<{ id: string }>;
 
 interface StateToProps {
+    user: any;
     task: Task | null | undefined;
     fetching: boolean;
     updating: boolean;
@@ -43,6 +44,7 @@ function mapStateToProps(state: CombinedState, own: Props): StateToProps {
     }
 
     return {
+        user: state.auth.user,
         task,
         deleteActivity,
         fetching,
@@ -61,6 +63,8 @@ function mapDispatchToProps(dispatch: any, own: Props): DispatchToProps {
                     id,
                     page: 1,
                     search: null,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
                     owner: null,
                     assignee: null,
                     name: null,

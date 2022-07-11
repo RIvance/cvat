@@ -296,6 +296,13 @@ export enum JobStage {
     ACCEPTANCE = 'acceptance',
 }
 
+export enum JobState {
+    NEW = 'new',
+    IN_PROGRESS = 'in progress',
+    COMPLETED = 'completed',
+    REJECTED = 'rejected',
+}
+
 export enum RQStatus {
     unknown = 'unknown',
     queued = 'queued',

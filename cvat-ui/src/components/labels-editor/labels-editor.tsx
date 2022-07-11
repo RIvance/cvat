@@ -8,10 +8,9 @@ import Tabs from 'antd/lib/tabs';
 import Text from 'antd/lib/typography/Text';
 import ModalConfirm from 'antd/lib/modal/confirm';
 import {
-    EditOutlined, BuildOutlined, ExclamationCircleOutlined,
+    BuildOutlined, ExclamationCircleOutlined,
 } from '@ant-design/icons';
 
-import RawViewer from './raw-viewer';
 import ConstructorViewer from './constructor-viewer';
 import ConstructorCreator from './constructor-creator';
 import ConstructorUpdater from './constructor-updater';
@@ -25,6 +24,7 @@ enum ConstructorMode {
 }
 
 interface LabelsEditorProps {
+    isEditable: boolean;
     labels: Label[];
     onSubmit: (labels: any[]) => void;
 }
@@ -81,22 +81,6 @@ export default class LabelsEditor extends React.PureComponent<LabelsEditorProps,
             });
         }
     }
-
-    private handleRawSubmit = (labels: Label[]): void => {
-        const unsavedLabels = [];
-        const savedLabels = [];
-
-        for (const label of labels) {
-            if (label.id >= 0) {
-                savedLabels.push(label);
-            } else {
-                unsavedLabels.push(label);
-            }
-        }
-
-        this.setState({ unsavedLabels, savedLabels });
-        this.handleSubmit(savedLabels, unsavedLabels);
-    };
 
     private handleCreate = (label: Label | null): void => {
         if (label === null) {
@@ -194,7 +178,7 @@ export default class LabelsEditor extends React.PureComponent<LabelsEditorProps,
     }
 
     public render(): JSX.Element {
-        const { labels } = this.props;
+        const { isEditable, labels } = this.props;
         const {
             savedLabels, unsavedLabels, constructorMode, labelForUpdate,
         } = this.state;
@@ -208,26 +192,15 @@ export default class LabelsEditor extends React.PureComponent<LabelsEditorProps,
                 <Tabs.TabPane
                     tab={(
                         <span>
-                            <EditOutlined />
-                            <Text>Raw</Text>
+                            <BuildOutlined />
+                            <Text>Labels</Text>
                         </span>
                     )}
                     key='1'
                 >
-                    <RawViewer labels={[...savedLabels, ...unsavedLabels]} onSubmit={this.handleRawSubmit} />
-                </Tabs.TabPane>
-
-                <Tabs.TabPane
-                    tab={(
-                        <span>
-                            <BuildOutlined />
-                            <Text>Constructor</Text>
-                        </span>
-                    )}
-                    key='2'
-                >
                     {constructorMode === ConstructorMode.SHOW && (
                         <ConstructorViewer
+                            isEditable={isEditable}
                             labels={[...savedLabels, ...unsavedLabels]}
                             onUpdate={(label: Label): void => {
                                 this.setState({

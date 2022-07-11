@@ -145,35 +145,35 @@ allow {
     # is_job_staff
 }
 
-allow {
-    { utils.VIEW, utils.VIEW_ANNOTATIONS, utils.VIEW_DATA, utils.VIEW_COMMITS }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    utils.has_perm(utils.USER)
-    organizations.has_perm(organizations.MAINTAINER)
-}
+#allow {
+#    { utils.VIEW, utils.VIEW_ANNOTATIONS, utils.VIEW_DATA, utils.VIEW_COMMITS }[input.scope]
+#    input.auth.organization.id == input.resource.organization.id
+#    utils.has_perm(utils.USER)
+#    organizations.has_perm(organizations.MAINTAINER)
+#}
+
+#allow {
+#    { utils.VIEW, utils.VIEW_ANNOTATIONS, utils.VIEW_DATA, utils.VIEW_COMMITS }[input.scope]
+#    input.auth.organization.id == input.resource.organization.id
+#    organizations.has_perm(organizations.WORKER)
+#    is_job_staff
+#}
 
 allow {
-    { utils.VIEW, utils.VIEW_ANNOTATIONS, utils.VIEW_DATA, utils.VIEW_COMMITS }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    organizations.has_perm(organizations.WORKER)
-    is_job_staff
-}
-
-allow {
-    { utils.UPDATE_STATE, utils.UPDATE_ANNOTATIONS, utils.DELETE_ANNOTATIONS,
+    { utils.UPDATE_ANNOTATIONS, utils.DELETE_ANNOTATIONS,
       utils.IMPORT_ANNOTATIONS }[input.scope]
     utils.is_sandbox
     utils.has_perm(utils.WORKER)
     is_job_staff
 }
 
-allow {
-    { utils.UPDATE_STATE, utils.UPDATE_ANNOTATIONS, utils.DELETE_ANNOTATIONS,
-      utils.IMPORT_ANNOTATIONS }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    utils.has_perm(utils.USER)
-    organizations.has_perm(organizations.MAINTAINER)
-}
+#allow {
+#    { utils.UPDATE_STATE, utils.UPDATE_ANNOTATIONS, utils.DELETE_ANNOTATIONS,
+#      utils.IMPORT_ANNOTATIONS }[input.scope]
+#    input.auth.organization.id == input.resource.organization.id
+#    utils.has_perm(utils.USER)
+#    organizations.has_perm(organizations.MAINTAINER)
+#}
 
 allow {
     { utils.UPDATE_STATE, utils.UPDATE_ANNOTATIONS, utils.DELETE_ANNOTATIONS,
@@ -184,24 +184,24 @@ allow {
     is_job_staff
 }
 
-allow {
-    { utils.UPDATE_STAGE, utils.UPDATE_ASSIGNEE }[input.scope]
-    utils.is_sandbox
-    utils.has_perm(utils.WORKER)
+#allow {
+#    { utils.UPDATE_STAGE, utils.UPDATE_ASSIGNEE }[input.scope]
+#    utils.is_sandbox
+#    utils.has_perm(utils.WORKER)
 #    is_task_staff
-}
+#}
 
-allow {
-    { utils.UPDATE_STAGE, utils.UPDATE_ASSIGNEE }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    utils.has_perm(utils.USER)
-    organizations.has_perm(organizations.MAINTAINER)
-}
-
-allow {
-    { utils.UPDATE_STAGE, utils.UPDATE_ASSIGNEE }[input.scope]
-    input.auth.organization.id == input.resource.organization.id
-    utils.has_perm(utils.WORKER)
-    organizations.has_perm(organizations.WORKER)
+#allow {
+#    { utils.UPDATE_STAGE, utils.UPDATE_ASSIGNEE }[input.scope]
+#    input.auth.organization.id == input.resource.organization.id
+#    utils.has_perm(utils.USER)
+#    organizations.has_perm(organizations.MAINTAINER)
+#}
+#
+#allow {
+#    { utils.UPDATE_STAGE, utils.UPDATE_ASSIGNEE }[input.scope]
+#    input.auth.organization.id == input.resource.organization.id
+#    utils.has_perm(utils.WORKER)
+#    organizations.has_perm(organizations.WORKER)
 #    is_task_staff
-}
+#}

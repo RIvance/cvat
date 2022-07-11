@@ -26,7 +26,7 @@ module.exports = {
         ...globalConfig.rules,
 
         '@typescript-eslint/no-explicit-any': 0,
-        '@typescript-eslint/indent': ['error', 4],
+        '@typescript-eslint/indent': ['off', 4],
         '@typescript-eslint/lines-between-class-members': 0,
         '@typescript-eslint/no-explicit-any': [0],
         '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
@@ -47,7 +47,7 @@ module.exports = {
         'react/no-unused-prop-types': 'off',
         'react/no-array-index-key': 'off',
         'react/static-property-placement': ['error', 'static public field'],
-        'react/jsx-indent': ['warn', 4],
+        'react/jsx-indent': ['off', 4],
         'react/jsx-indent-props': ['warn', 4],
         'react/jsx-props-no-spreading': 0,
         'jsx-quotes': ['error', 'prefer-single'],

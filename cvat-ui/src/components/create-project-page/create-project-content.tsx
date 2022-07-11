@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -192,6 +192,7 @@ export default function CreateProjectContent(): JSX.Element {
             <Col span={24}>
                 <Text className='cvat-text-color'>Labels:</Text>
                 <LabelsEditor
+                    isEditable
                     labels={projectLabels}
                     onSubmit={(newLabels): void => {
                         setProjectLabels(newLabels);

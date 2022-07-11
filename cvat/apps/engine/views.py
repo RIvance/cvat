@@ -1021,6 +1021,21 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
         else:
             return Response("You don't have enough points", status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    @action(detail=True, methods=['GET'], url_path='contributors')
+    def contributors(self, request, pk):
+
+        db_task: Task = self.get_object()
+        db_contributors = User.objects.filter(job__segment__task=db_task).all()
+
+        serializer = BasicUserSerializer(data=db_contributors)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # TODO! Fix: is_valid() always returns false
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 @extend_schema(tags=['jobs'])
 @extend_schema_view(
@@ -1255,6 +1270,7 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
             )
 
         db_job.assignee = rq_user
+        db_job.state = StateChoice.IN_PROGRESS
         db_job.save()
 
         return Response(status=status.HTTP_200_OK)
@@ -1290,7 +1306,7 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
             job.assignee = None
             job.stage = StageChoice.ANNOTATION
             job.status = StatusChoice.ANNOTATION
-            job.state = StateChoice.IN_PROGRESS
+            job.state = StateChoice.REJECTED
             job.save()
 
         db_job: Job = self.get_object()

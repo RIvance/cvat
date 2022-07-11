@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -14,6 +14,7 @@ import LoadSubmenu from './load-submenu';
 import { DimensionType } from '../../reducers/interfaces';
 
 interface Props {
+    isDisabled: boolean;
     taskID: number;
     taskMode: string;
     bugTracker: string;
@@ -39,6 +40,7 @@ export enum Actions {
 
 function ActionsMenuComponent(props: Props): JSX.Element {
     const {
+        isDisabled,
         taskID,
         bugTracker,
         inferenceIsActive,
@@ -78,7 +80,12 @@ function ActionsMenuComponent(props: Props): JSX.Element {
     );
 
     return (
-        <Menu selectable={false} className='cvat-actions-menu' onClick={onClickMenuWrapper}>
+        <Menu
+            disabled={isDisabled}
+            selectable={false}
+            className='cvat-actions-menu'
+            onClick={onClickMenuWrapper}
+        >
             {LoadSubmenu({
                 loaders,
                 loadActivity,
@@ -102,7 +109,7 @@ function ActionsMenuComponent(props: Props): JSX.Element {
                 menuKey: Actions.LOAD_TASK_ANNO,
                 taskDimension,
             })}
-            <Menu.Item key={Actions.EXPORT_TASK_DATASET}>Export task dataset</Menu.Item>
+            {/* <Menu.Item key={Actions.EXPORT_TASK_DATASET}>Export task dataset</Menu.Item> */}
             {!!bugTracker && <Menu.Item key={Actions.OPEN_BUG_TRACKER}>Open bug tracker</Menu.Item>}
             <Menu.Item disabled={inferenceIsActive} key={Actions.RUN_AUTO_ANNOTATION}>
                 Automatic annotation

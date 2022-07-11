@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -286,6 +286,7 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
                 <Text type='danger'>* </Text>
                 <Text className='cvat-text-color'>Labels</Text>
                 <LabelsEditor
+                    isEditable
                     labels={labels}
                     onSubmit={(newLabels): void => {
                         this.setState({

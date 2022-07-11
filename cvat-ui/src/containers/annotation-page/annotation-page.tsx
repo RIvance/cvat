@@ -20,6 +20,7 @@ type OwnProps = RouteComponentProps<{
 }>;
 
 interface StateToProps {
+    user: any;
     job: any | null | undefined;
     frameNumber: number;
     fetching: boolean;
@@ -49,6 +50,7 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
     } = state;
 
     return {
+        user: state.auth.user,
         job: jobID === requestedId ? job : null,
         fetching,
         workspace,

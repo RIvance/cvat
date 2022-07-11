@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -18,6 +18,7 @@ import { Task } from 'reducers/interfaces';
 import TopBarComponent from './top-bar';
 
 interface TaskPageComponentProps {
+    user: any;
     task: Task | null | undefined;
     fetching: boolean;
     updating: boolean;

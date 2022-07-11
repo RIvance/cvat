@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -15,6 +15,7 @@ import PlayerNavigation from './player-navigation';
 import RightGroup from './right-group';
 
 interface Props {
+    reviewOnly: boolean;
     playing: boolean;
     saving: boolean;
     savingStatuses: string[];
@@ -49,6 +50,9 @@ interface Props {
     showFilters(): void;
     onSwitchPlay(): void;
     onSaveAnnotation(): void;
+    onFinishJob(): void;
+    onReviewAccept(): void; // review mode
+    onReviewReject(): void; // review mode
     onPrevFrame(): void;
     onNextFrame(): void;
     onForward(): void;
@@ -69,6 +73,7 @@ interface Props {
 
 export default function AnnotationTopBarComponent(props: Props): JSX.Element {
     const {
+        reviewOnly,
         saving,
         savingStatuses,
         undoAction,
@@ -102,6 +107,9 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         changeWorkspace,
         onSwitchPlay,
         onSaveAnnotation,
+        onFinishJob,
+        onReviewAccept,
+        onReviewReject,
         onPrevFrame,
         onNextFrame,
         onForward,
@@ -124,6 +132,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
     return (
         <Row justify='space-between'>
             <LeftGroup
+                reviewOnly={reviewOnly}
                 saving={saving}
                 savingStatuses={savingStatuses}
                 undoAction={undoAction}
@@ -136,6 +145,9 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                 switchToolsBlockerShortcut={switchToolsBlockerShortcut}
                 toolsBlockerState={toolsBlockerState}
                 onSaveAnnotation={onSaveAnnotation}
+                onFinishJob={onFinishJob}
+                onReviewAccept={onReviewAccept}
+                onReviewReject={onReviewReject}
                 onUndoClick={onUndoClick}
                 onRedoClick={onRedoClick}
                 onFinishDraw={onFinishDraw}

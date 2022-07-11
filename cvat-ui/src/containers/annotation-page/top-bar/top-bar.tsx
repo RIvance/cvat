@@ -42,6 +42,10 @@ import isAbleToChangeFrame from 'utils/is-able-to-change-frame';
 import GlobalHotKeys, { KeyMap } from 'utils/mousetrap-react';
 import { switchToolsBlockerState } from 'actions/settings-actions';
 
+interface OwnProps {
+    reviewOnly: boolean;
+}
+
 interface StateToProps {
     jobInstance: any;
     frameNumber: number;
@@ -131,6 +135,8 @@ function mapStateToProps(state: CombinedState): StateToProps {
         workspace,
         keyMap,
         normalizedKeyMap,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         canvasInstance,
         forceExit,
         predictor,
@@ -193,7 +199,7 @@ interface State {
     nextButtonType: 'regular' | 'filtered' | 'empty';
 }
 
-type Props = StateToProps & DispatchToProps & RouteComponentProps;
+type Props = StateToProps & DispatchToProps & RouteComponentProps & OwnProps;
 class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
     private inputFrameRef: React.RefObject<Input>;
     private autoSaveInterval: number | undefined;
@@ -413,6 +419,18 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         onSaveAnnotation(jobInstance);
     };
 
+    private onFinishJob = (): void => {
+        // TODO!
+    };
+
+    private onReviewAccept = (): void => {
+        // TODO!
+    };
+
+    private onReviewReject = (): void => {
+        // TODO!
+    };
+
     private onChangePlayerSliderValue = (value: number): void => {
         const { playing, onSwitchPlay } = this.props;
         if (playing) {
@@ -555,6 +573,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
     public render(): JSX.Element {
         const { nextButtonType, prevButtonType } = this.state;
         const {
+            reviewOnly,
             playing,
             saving,
             savingStatuses,
@@ -668,10 +687,14 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             <>
                 <GlobalHotKeys keyMap={subKeyMap} handlers={handlers} />
                 <AnnotationTopBarComponent
+                    reviewOnly={reviewOnly}
                     showStatistics={this.showStatistics}
                     showFilters={this.showFilters}
                     onSwitchPlay={this.onSwitchPlay}
                     onSaveAnnotation={this.onSaveAnnotation}
+                    onFinishJob={this.onFinishJob}
+                    onReviewAccept={this.onReviewAccept}
+                    onReviewReject={this.onReviewReject}
                     onPrevFrame={this.onPrevFrame}
                     onNextFrame={this.onNextFrame}
                     onForward={this.onForward}

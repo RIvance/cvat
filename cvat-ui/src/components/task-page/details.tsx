@@ -20,8 +20,6 @@ import { ActiveInference } from 'reducers/interfaces';
 import AutomaticAnnotationProgress from 'components/tasks-page/automatic-annotation-progress';
 import Descriptions from 'antd/lib/descriptions';
 import Space from 'antd/lib/space';
-import UserSelector, { User } from './user-selector';
-import BugTrackerEditor from './bug-tracker-editor';
 import LabelsEditorComponent from '../labels-editor/labels-editor';
 import ProjectSubsetField from '../create-task-page/project-subset-field';
 
@@ -32,6 +30,7 @@ const core = getCore();
 interface Props {
     previewImage: string;
     taskInstance: any;
+    isEditable: boolean;
     installedGit: boolean; // change to git repos url
     activeInference: ActiveInference | null;
     projectSubsets: string[];
@@ -190,12 +189,12 @@ export default class DetailsComponent extends React.PureComponent<Props, State> 
 
     private renderTaskName(): JSX.Element {
         const { name } = this.state;
-        const { taskInstance, onTaskUpdate } = this.props;
+        const { taskInstance, isEditable, onTaskUpdate } = this.props;
 
         return (
             <Title
                 level={4}
-                editable={{
+                editable={isEditable && {
                     onChange: (value: string): void => {
                         this.setState({
                             name: value,
@@ -233,19 +232,9 @@ export default class DetailsComponent extends React.PureComponent<Props, State> 
     }
 
     private renderDescription(): JSX.Element {
-        const { taskInstance, onTaskUpdate } = this.props;
+        const { taskInstance } = this.props;
         const owner = taskInstance.owner ? taskInstance.owner.username : null;
-        const assignee = taskInstance.assignee ? taskInstance.assignee : null;
         const created = moment(taskInstance.createdDate).format('MMMM Do YYYY');
-        const assigneeSelect = (
-            <UserSelector
-                value={assignee}
-                onSelect={(value: User | null): void => {
-                    taskInstance.assignee = value;
-                    onTaskUpdate(taskInstance);
-                }}
-            />
-        );
 
         return (
             <Row className='cvat-task-details-user-block' justify='space-between' align='middle'>
@@ -253,10 +242,6 @@ export default class DetailsComponent extends React.PureComponent<Props, State> 
                     {owner && (
                         <Text type='secondary'>{`Task #${taskInstance.id} Created by ${owner} on ${created}`}</Text>
                     )}
-                </Col>
-                <Col span={10}>
-                    <Text type='secondary'>Assigned to</Text>
-                    {assigneeSelect}
                 </Col>
             </Row>
         );
@@ -353,12 +338,13 @@ export default class DetailsComponent extends React.PureComponent<Props, State> 
     }
 
     private renderLabelsEditor(): JSX.Element {
-        const { taskInstance, onTaskUpdate } = this.props;
+        const { isEditable, taskInstance, onTaskUpdate } = this.props;
 
         return (
             <Row>
                 <Col span={24}>
                     <LabelsEditorComponent
+                        isEditable={isEditable}
                         labels={taskInstance.labels.map((label: any): string => label.toJSON())}
                         onSubmit={(labels: any[]): void => {
                             taskInstance.labels = labels.map((labelData): any => new core.classes.Label(labelData));
@@ -402,7 +388,7 @@ export default class DetailsComponent extends React.PureComponent<Props, State> 
 
     public render(): JSX.Element {
         const {
-            activeInference, cancelAutoAnnotation, taskInstance, onTaskUpdate,
+            activeInference, cancelAutoAnnotation, taskInstance,
         } = this.props;
 
         return (
@@ -422,15 +408,17 @@ export default class DetailsComponent extends React.PureComponent<Props, State> 
                     <Col md={16} lg={17} xl={17} xxl={18}>
                         {this.renderDescription()}
                         <Row justify='space-between' align='middle'>
-                            <Col span={12}>
-                                <BugTrackerEditor
-                                    instance={taskInstance}
-                                    onChange={(bugTracker) => {
-                                        taskInstance.bugTracker = bugTracker;
-                                        onTaskUpdate(taskInstance);
-                                    }}
-                                />
-                            </Col>
+                            {/* <Col span={12}> */}
+                            {/*    <BugTrackerEditor */}
+                            {/*        instance={taskInstance} */}
+                            {/*        onChange={(bugTracker) => { */}
+                            {/*            taskInstance.bugTracker = bugTracker; */}
+                            {/*            onTaskUpdate(taskInstance); */}
+                            {/*        }} */}
+                            {/*    /> */}
+                            {/* </Col> */}
+
+                            <Col span={12} />
                             <Col span={10}>
                                 <AutomaticAnnotationProgress
                                     activeInference={activeInference}

@@ -23,6 +23,7 @@ import './styles.scss';
 import Button from 'antd/lib/button';
 
 interface Props {
+    user: any;
     job: any | null | undefined;
     fetching: boolean;
     frameNumber: number;
@@ -35,7 +36,7 @@ interface Props {
 
 export default function AnnotationPageComponent(props: Props): JSX.Element {
     const {
-        job, fetching, workspace, frameNumber, getJob, closeJob, saveLogs, changeFrame,
+        user, job, fetching, workspace, frameNumber, getJob, closeJob, saveLogs, changeFrame,
     } = props;
     const prevJob = usePrevious(job);
     const prevFetching = usePrevious(fetching);
@@ -137,7 +138,7 @@ export default function AnnotationPageComponent(props: Props): JSX.Element {
     return (
         <Layout className='cvat-annotation-page'>
             <Layout.Header className='cvat-annotation-header'>
-                <AnnotationTopBarContainer />
+                <AnnotationTopBarContainer reviewOnly={user.isStaff || user.id === job.assignee.id} />
             </Layout.Header>
             {workspace === Workspace.STANDARD3D && (
                 <Layout.Content className='cvat-annotation-layout-content'>
