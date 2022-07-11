@@ -1265,70 +1265,95 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
 
         if Job.objects.filter(status=StatusChoice.ANNOTATION, assignee=rq_user).count() > 3:
             return Response(
-                "Each user can only takeup 3 tasks at the same time",
-                status=status.HTTP_304_NOT_MODIFIED
+                data="Each user can only takeup 3 tasks at the same time",
+                status=status.HTTP_200_OK
             )
 
         db_job.assignee = rq_user
         db_job.state = StateChoice.IN_PROGRESS
         db_job.save()
 
-        return Response(status=status.HTTP_200_OK)
+        return Response(data={'success': True}, status=status.HTTP_200_OK)
 
-
-    @action(detail=True, methods=['PUT'], url_path='review')
-    def review(self, request, pk):
-        def complete_job(job: Job):
-            job.stage = StageChoice.ACCEPTANCE
-            job.status = StatusChoice.COMPLETED
-            job.state = StateChoice.COMPLETED
-            job.save()
-
-            db_task: Task = job.segment.task
-            db_segments: List[Segment] = list(Segment.objects.filter(task=db_task).all())
-            db_job_query = Job.objects.filter(segment__in=db_segments) \
-                .filter(stage=StageChoice.ACCEPTANCE)
-
-            if db_job_query.count() == len(db_segments):
-                db_task.status = StatusChoice.COMPLETED
-                # db_jobs: List[Job] = list(Job.objects.filter(segment__in=db_segments).all())
-                for segment in db_segments:
-                    db_job: Union[Job, None] = Job.objects.filter(segment=segment).first()
-                    if db_job is not None:
-                        db_user_assets: Union[UserAssets, None] = UserAssets.objects.filter(user=job.assignee).first()
-                        if db_user_assets is not None:
-                            db_user_assets = UserAssets.objects.create(user=job.assignee)
-                        assert(db_user_assets is not None)
-                        db_user_assets.points += segment.stop_frame - segment.start_frame
-                        db_user_assets.save()
-
-        def reject_job(job: Job):
-            job.assignee = None
-            job.stage = StageChoice.ANNOTATION
-            job.status = StatusChoice.ANNOTATION
-            job.state = StateChoice.REJECTED
-            job.save()
-
+    @action(detail=True, methods=['PATCH'], url_path='submit')
+    def submit(self, request, pk):
         db_job: Job = self.get_object()
-        rq_user = self.request.user
+        db_job.stage = StageChoice.VALIDATION
+        db_job.status = StatusChoice.VALIDATION
+        db_job.state = StateChoice.IN_PROGRESS
+        db_job.save()
+        return Response(data={'success': True}, status=status.HTTP_200_OK)
 
-        if db_job.status != StatusChoice.VALIDATION:
-            return Response("This job is not in review stage", status=status.HTTP_406_NOT_ACCEPTABLE)
+    @action(detail=True, methods=['GET', 'POST'], url_path='review')
+    def review(self, request, pk):
 
-        ReviewRecord.objects.create(result=request.data.result, job=db_job, reviewer=rq_user)
-        reviews: List[ReviewRecord] = list(ReviewRecord.objects.filter(job=db_job).all())
-        review_results: List[bool] = list(map(lambda review: bool(review.result), reviews))
+        if request.method == 'POST':
 
-        if len(reviews) == 2:
-            if all(review_results):
-                complete_job(db_job)
-        elif len(reviews) == 3:
-            if review_results.count(True) >= 2:
-                complete_job(db_job)
-            else:
-                reject_job(db_job)
+            def complete_job(job: Job):
+                job.stage = StageChoice.ACCEPTANCE
+                job.status = StatusChoice.COMPLETED
+                job.state = StateChoice.COMPLETED
+                job.save()
 
-        return Response(status=status.HTTP_200_OK)
+                db_task: Task = job.segment.task
+                db_segments: List[Segment] = list(Segment.objects.filter(task=db_task).all())
+                db_job_query = Job.objects.filter(segment__in=db_segments) \
+                    .filter(stage=StageChoice.ACCEPTANCE)
+
+                if db_job_query.count() == len(db_segments):
+                    db_task.status = StatusChoice.COMPLETED
+                    # db_jobs: List[Job] = list(Job.objects.filter(segment__in=db_segments).all())
+                    for segment in db_segments:
+                        db_job: Union[Job, None] = Job.objects.filter(segment=segment).first()
+                        if db_job is not None:
+                            db_user_assets: Union[UserAssets, None] = UserAssets.objects.filter(user=job.assignee).first()
+                            if db_user_assets is not None:
+                                db_user_assets = UserAssets.objects.create(user=job.assignee)
+                            assert(db_user_assets is not None)
+                            db_user_assets.points += segment.stop_frame - segment.start_frame
+                            db_user_assets.save()
+
+            def reject_job(job: Job):
+                job.assignee = None
+                job.stage = StageChoice.ANNOTATION
+                job.status = StatusChoice.ANNOTATION
+                job.state = StateChoice.REJECTED
+                job.save()
+
+            db_job: Job = self.get_object()
+            rq_user = self.request.user
+
+            if db_job.status != StatusChoice.VALIDATION:
+                return Response("This job is not in review stage", status=status.HTTP_406_NOT_ACCEPTABLE)
+
+            ReviewRecord.objects.create(result=request.data['result'], job=db_job, reviewer=rq_user)
+            reviews: List[ReviewRecord] = list(ReviewRecord.objects.filter(job=db_job).all())
+            review_results: List[bool] = list(map(lambda review: bool(review.result), reviews))
+
+            if len(reviews) == 2:
+                if all(review_results):
+                    complete_job(db_job)
+            elif len(reviews) == 3:
+                if review_results.count(True) >= 2:
+                    complete_job(db_job)
+                else:
+                    reject_job(db_job)
+
+            return Response(data={'success': True}, status=status.HTTP_200_OK)
+
+        # check if the user has permission to review the job
+        elif request.method == 'GET':
+
+            rq_user: User = self.request.user
+            db_job = self.get_object()
+
+            if db_job.assignee == rq_user:
+                return Response("The job cannot be reviewed by the annotator")
+
+            if ReviewRecord.objects.filter(job=db_job).filter(reviewer=rq_user).count() > 0:
+                return Response("You have already reviewed this job")
+
+            return Response(data={"success": True})
 
 
 @extend_schema(tags=['issues'])

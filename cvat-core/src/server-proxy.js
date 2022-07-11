@@ -1039,6 +1039,41 @@
                 return response.data;
             }
 
+            async function createReview(jobID, reviewResult) {
+                const { backendAPI } = config;
+
+                let response = null;
+                try {
+                    response = await Axios.post(`${backendAPI}/jobs/${jobID}/review`, {
+                        result: reviewResult,
+                    }, {
+                        proxy: config.proxy,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+
+                return response.data;
+            }
+
+            async function checkReviewable(jobID) {
+                const { backendAPI } = config;
+
+                let response = null;
+                try {
+                    response = await Axios.get(`${backendAPI}/jobs/${jobID}/review`, {}, {
+                        proxy: config.proxy,
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+
+                return response.data;
+            }
+
             async function updateIssue(issueID, data) {
                 const { backendAPI } = config;
 
@@ -1083,6 +1118,32 @@
                 }
 
                 return response.data;
+            }
+
+            async function submitJob(id) {
+                const { backendAPI } = config;
+                let response = null;
+                try {
+                    response = await Axios.patch(`${backendAPI}/jobs/${id}/submit`, {}, {
+                        proxy: config.proxy,
+                    });
+                } catch (error) {
+                    throw generateError(error);
+                }
+                return response;
+            }
+
+            async function claimJob(id) {
+                const { backendAPI } = config;
+                let response = null;
+                try {
+                    response = await Axios.patch(`${backendAPI}/jobs/${id}/claim`, {}, {
+                        proxy: config.proxy,
+                    });
+                } catch (error) {
+                    throw generateError(error);
+                }
+                return response;
             }
 
             async function getUsers(filter = { page_size: 'all' }) {
@@ -1889,6 +1950,10 @@
                         value: Object.freeze({
                             get: getJobs,
                             save: saveJob,
+                            review: createReview,
+                            reviewable: checkReviewable,
+                            submit: submitJob,
+                            claim: claimJob,
                         }),
                         writable: false,
                     },

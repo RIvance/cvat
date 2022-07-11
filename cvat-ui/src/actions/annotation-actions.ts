@@ -26,7 +26,6 @@ import {
     Task,
     Workspace,
 } from 'reducers/interfaces';
-import { updateJobAsync } from './tasks-actions';
 import { switchToolsBlockerState } from './settings-actions';
 
 interface AnnotationsParameters {
@@ -1133,10 +1132,10 @@ export function saveAnnotationsAsync(sessionInstance: any, afterSave?: () => voi
                 afterSave();
             }
 
-            if (sessionInstance instanceof cvat.classes.Job && sessionInstance.state === cvat.enums.JobState.NEW) {
-                sessionInstance.state = cvat.enums.JobState.IN_PROGRESS;
-                dispatch(updateJobAsync(sessionInstance));
-            }
+            // if (sessionInstance instanceof cvat.classes.Job && sessionInstance.state === cvat.enums.JobState.NEW) {
+            //     sessionInstance.state = cvat.enums.JobState.IN_PROGRESS;
+            //     dispatch(updateJobAsync(sessionInstance));
+            // }
 
             dispatch({
                 type: AnnotationActionTypes.SAVE_ANNOTATIONS_SUCCESS,

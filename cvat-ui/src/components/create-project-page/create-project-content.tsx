@@ -50,7 +50,14 @@ function AdaptiveAutoAnnotationForm({ formRef }: { formRef: RefObject<FormInstan
     return (
         <Form layout='vertical' ref={formRef}>
             <Form.Item name='project_class' hasFeedback label='Class'>
-                <Select value={projectClass.value} onChange={(v) => projectClass.set(v)}>
+                <Select
+                    value={projectClass.value}
+                    onChange={
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                        (v) => projectClass.set(v)
+                    }
+                >
                     <Option value=''>--Not Selected--</Option>
                     <Option value='OD'>Detection</Option>
                 </Select>
@@ -60,7 +67,11 @@ function AdaptiveAutoAnnotationForm({ formRef }: { formRef: RefObject<FormInstan
                 <Switch
                     disabled={!projectClassesForTraining.includes(projectClass.value)}
                     checked={trainingEnabled.value}
-                    onClick={() => trainingEnabled.set(!trainingEnabled.value)}
+                    onClick={
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        () => trainingEnabled.set(!trainingEnabled.value)
+                    }
                 />
             </Form.Item>
 

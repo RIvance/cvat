@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: MIT
 
-import { AnyAction, Dispatch, ActionCreator } from 'redux';
+import { ActionCreator, AnyAction, Dispatch } from 'redux';
 import { ThunkAction } from 'redux-thunk';
-import { TasksQuery, CombinedState, Indexable } from 'reducers/interfaces';
+import { CombinedState, Indexable, TasksQuery } from 'reducers/interfaces';
 import { getCVATStore } from 'cvat-store';
 import getCore from 'cvat-core-wrapper';
 import { getInferenceStatusAsync } from './models-actions';
@@ -31,6 +31,9 @@ export enum TasksActionTypes {
     UPDATE_JOB = 'UPDATE_JOB',
     UPDATE_JOB_SUCCESS = 'UPDATE_JOB_SUCCESS',
     UPDATE_JOB_FAILED = 'UPDATE_JOB_FAILED',
+    CLAIM_JOB = 'CLAIM_JOB',
+    CLAIM_JOB_SUCCESS = 'CLAIM_JOB_SUCCESS',
+    CLAIM_JOB_FAILED = 'CLAIM_JOB_FAILED',
     HIDE_EMPTY_TASKS = 'HIDE_EMPTY_TASKS',
     EXPORT_TASK = 'EXPORT_TASK',
     EXPORT_TASK_SUCCESS = 'EXPORT_TASK_SUCCESS',
@@ -508,6 +511,46 @@ export function updateJobAsync(jobInstance: any): ThunkAction<Promise<void>, {},
             dispatch(updateJobSuccess(newJob));
         } catch (error) {
             dispatch(updateJobFailed(jobInstance.id, error));
+        }
+    };
+}
+
+function claimJob(): AnyAction {
+    return {
+        type: TasksActionTypes.CLAIM_JOB,
+        payload: {},
+    };
+}
+
+function claimJobSuccess(): AnyAction {
+    return {
+        type: TasksActionTypes.CLAIM_JOB_SUCCESS,
+        payload: {},
+    };
+}
+
+function claimJobFailed(error: any): AnyAction {
+    return {
+        type: TasksActionTypes.CLAIM_JOB_FAILED,
+        payload: { error },
+    };
+}
+
+export function claimJobAsync(jobInstance: any, after?: () => void): ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            dispatch(claimJob());
+            const result = await cvat.jobs.claim(jobInstance.id);
+            if (result.data.success) {
+                dispatch(claimJobSuccess());
+                if (after) {
+                    after();
+                }
+            } else {
+                dispatch(claimJobFailed(result.data));
+            }
+        } catch (error) {
+            dispatch(claimJobFailed(error));
         }
     };
 }

@@ -5,6 +5,8 @@
 import { ActionUnion, createAction, ThunkAction } from 'utils/redux';
 import getCore from 'cvat-core-wrapper';
 import { Indexable, JobsQuery } from 'reducers/interfaces';
+import { string } from 'prop-types';
+import { saveAnnotationsAsync } from './annotation-actions';
 
 const cvat = getCore();
 
@@ -12,6 +14,14 @@ export enum JobsActionTypes {
     GET_JOBS = 'GET_JOBS',
     GET_JOBS_SUCCESS = 'GET_JOBS_SUCCESS',
     GET_JOBS_FAILED = 'GET_JOBS_FAILED',
+    CHECK_JOB_REVIEWABLE_FORBIDDEN = 'CHECK_JOB_REVIEWABLE_FORBIDDEN',
+    CHECK_JOB_REVIEWABLE_FAILED = 'CHECK_JOB_REVIEWABLE_FAILED',
+    SUBMIT_JOB_REVIEW = 'SUBMIT_JOB_REVIEW',
+    SUBMIT_JOB_REVIEW_SUCCESS = 'SUBMIT_JOB_REVIEW_SUCCESS',
+    SUBMIT_JOB_REVIEW_FAILED = 'SUBMIT_JOB_REVIEW_FAILED',
+    SUBMIT_JOB = 'SUBMIT_JOB',
+    SUBMIT_JOB_SUCCESS = 'SUBMIT_JOB_SUCCESS',
+    SUBMIT_JOB_FAILED = 'SUBMIT_JOB_FAILED',
 }
 
 interface JobsList extends Array<any> {
@@ -24,9 +34,32 @@ const jobsActions = {
         createAction(JobsActionTypes.GET_JOBS_SUCCESS, { jobs, previews })
     ),
     getJobsFailed: (error: any) => createAction(JobsActionTypes.GET_JOBS_FAILED, { error }),
+    checkReviewableForbidden: (reason: any) => createAction(JobsActionTypes.CHECK_JOB_REVIEWABLE_FORBIDDEN, { reason }),
+    checkReviewableFailed: (error: any) => createAction(JobsActionTypes.CHECK_JOB_REVIEWABLE_FAILED, { error }),
+    submitJobReview: (reviewResult: boolean) => createAction(JobsActionTypes.SUBMIT_JOB_REVIEW, { reviewResult }),
+    submitJobReviewSuccess: () => createAction(JobsActionTypes.SUBMIT_JOB_REVIEW_SUCCESS),
+    submitJobReviewFailed: (error: any) => createAction(JobsActionTypes.SUBMIT_JOB_REVIEW_FAILED, { error }),
+    submitJob: () => createAction(JobsActionTypes.SUBMIT_JOB),
+    submitJobSuccess: () => createAction(JobsActionTypes.SUBMIT_JOB_SUCCESS),
+    submitJobFailed: (error: any) => createAction(JobsActionTypes.SUBMIT_JOB_FAILED, { error }),
 };
 
 export type JobsActions = ActionUnion<typeof jobsActions>;
+
+export const checkIfReviewableAsync = (jobInstance: any, ifReviewable: () => void): ThunkAction => async (dispatch) => {
+    try {
+        const result = await cvat.jobs.reviewable(jobInstance.id);
+        if (result.success || (result.data && result.data.success)) {
+            ifReviewable();
+        } else if (result.data && result.data instanceof string) {
+            dispatch(jobsActions.checkReviewableForbidden(result.data));
+        } else {
+            dispatch(jobsActions.checkReviewableForbidden(result));
+        }
+    } catch (error) {
+        dispatch(jobsActions.checkReviewableFailed(error));
+    }
+};
 
 export const getJobsAsync = (query: JobsQuery): ThunkAction => async (dispatch) => {
     try {
@@ -44,5 +77,41 @@ export const getJobsAsync = (query: JobsQuery): ThunkAction => async (dispatch) 
         dispatch(jobsActions.getJobsSuccess(jobs, await Promise.all(previewPromises)));
     } catch (error) {
         dispatch(jobsActions.getJobsFailed(error));
+    }
+};
+
+export const submitJobReviewAsync = (jobID: number, reviewResult: boolean): ThunkAction => async (dispatch) => {
+    try {
+        dispatch(jobsActions.submitJobReview(reviewResult));
+        const result = await cvat.jobs.review(jobID, reviewResult);
+        if (result.success || (result.data && result.data.success)) {
+            dispatch(jobsActions.submitJobReviewSuccess());
+        } else if (result.data && result.data instanceof string) {
+            dispatch(jobsActions.checkReviewableForbidden(result.data));
+        } else {
+            dispatch(jobsActions.checkReviewableForbidden(result));
+        }
+    } catch (error) {
+        dispatch(jobsActions.submitJobReviewFailed(error));
+    }
+};
+
+export const submitJobAsync = (sessionInstance: any): ThunkAction => async (dispatch) => {
+    try {
+        if (sessionInstance instanceof cvat.classes.Job) {
+            dispatch(jobsActions.submitJob());
+            dispatch(saveAnnotationsAsync(sessionInstance, async () => {
+                const result = await cvat.jobs.submit(sessionInstance.id);
+                if (result.success || (result.data && result.data.success)) {
+                    dispatch(jobsActions.submitJobSuccess());
+                } else if (result.data && result.data instanceof string) {
+                    dispatch(jobsActions.checkReviewableForbidden(result.data));
+                } else {
+                    dispatch(jobsActions.checkReviewableForbidden(result));
+                }
+            }));
+        }
+    } catch (error) {
+        dispatch(jobsActions.submitJobFailed(error));
     }
 };

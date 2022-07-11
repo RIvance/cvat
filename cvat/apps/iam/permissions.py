@@ -802,7 +802,10 @@ class JobPermission(OpenPolicyAgentPermission):
             ('data', 'GET'): 'view:data',
             ('issues', 'GET'): 'view',
             ('commits', 'GET'): 'view:commits',
-            ('claim', 'PATCH'): 'view'
+            ('claim', 'PATCH'): 'view',
+            ('submit', 'PATCH'): 'view',
+            ('review', 'POST'): 'view',
+            ('review', 'GET'): 'view',
         }.get((view.action, request.method))
 
         scopes = []

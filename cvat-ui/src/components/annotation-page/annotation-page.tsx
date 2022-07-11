@@ -9,7 +9,8 @@ import Result from 'antd/lib/result';
 import Spin from 'antd/lib/spin';
 import notification from 'antd/lib/notification';
 
-import AttributeAnnotationWorkspace from 'components/annotation-page/attribute-annotation-workspace/attribute-annotation-workspace';
+import AttributeAnnotationWorkspace
+    from 'components/annotation-page/attribute-annotation-workspace/attribute-annotation-workspace';
 import ReviewAnnotationsWorkspace from 'components/annotation-page/review-workspace/review-workspace';
 import StandardWorkspaceComponent from 'components/annotation-page/standard-workspace/standard-workspace';
 import StandardWorkspace3DComponent from 'components/annotation-page/standard3D-workspace/standard3D-workspace';
@@ -21,6 +22,7 @@ import { Workspace } from 'reducers/interfaces';
 import { usePrevious } from 'utils/hooks';
 import './styles.scss';
 import Button from 'antd/lib/button';
+import { changeWorkspace } from '../../actions/annotation-actions';
 
 interface Props {
     user: any;
@@ -31,6 +33,7 @@ interface Props {
     getJob(): void;
     saveLogs(): void;
     closeJob(): void;
+    changeWorkspace(workspace: Workspace): void;
     changeFrame(frame: number): void;
 }
 
@@ -42,6 +45,7 @@ export default function AnnotationPageComponent(props: Props): JSX.Element {
     const prevFetching = usePrevious(fetching);
 
     const history = useHistory();
+
     useEffect(() => {
         saveLogs();
         const root = window.document.getElementById('root');
@@ -135,10 +139,16 @@ export default function AnnotationPageComponent(props: Props): JSX.Element {
         );
     }
 
+    const reviewOnly = job.assignee !== null && !(user.isStaff || user.id === job.assignee.id);
+
+    if (reviewOnly) {
+        changeWorkspace(Workspace.REVIEW_WORKSPACE);
+    }
+
     return (
         <Layout className='cvat-annotation-page'>
             <Layout.Header className='cvat-annotation-header'>
-                <AnnotationTopBarContainer reviewOnly={user.isStaff || user.id === job.assignee.id} />
+                <AnnotationTopBarContainer reviewOnly={reviewOnly} />
             </Layout.Header>
             {workspace === Workspace.STANDARD3D && (
                 <Layout.Content className='cvat-annotation-layout-content'>

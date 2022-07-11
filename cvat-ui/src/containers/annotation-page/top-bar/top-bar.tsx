@@ -41,6 +41,7 @@ import {
 import isAbleToChangeFrame from 'utils/is-able-to-change-frame';
 import GlobalHotKeys, { KeyMap } from 'utils/mousetrap-react';
 import { switchToolsBlockerState } from 'actions/settings-actions';
+import { submitJobReviewAsync, submitJobAsync } from '../../../actions/jobs-actions';
 
 interface OwnProps {
     reviewOnly: boolean;
@@ -77,6 +78,9 @@ interface DispatchToProps {
     onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
     onSwitchPlay(playing: boolean): void;
     onSaveAnnotation(sessionInstance: any): void;
+    onSubmitJob(jobInstance: any): void;
+    onReviewAccept(jobID: number): void;
+    onReviewReject(jobID: number): void;
     showStatistics(sessionInstance: any): void;
     showFilters(sessionInstance: any): void;
     undo(sessionInstance: any, frameNumber: any): void;
@@ -155,6 +159,15 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         onSaveAnnotation(sessionInstance: any): void {
             dispatch(saveAnnotationsAsync(sessionInstance));
+        },
+        onSubmitJob(jobInstance: any) {
+            dispatch(submitJobAsync(jobInstance));
+        },
+        onReviewAccept(jobID: number) {
+            dispatch(submitJobReviewAsync(jobID, true));
+        },
+        onReviewReject(jobID: number) {
+            dispatch(submitJobReviewAsync(jobID, false));
         },
         showStatistics(sessionInstance: any): void {
             dispatch(collectStatisticsAsync(sessionInstance));
@@ -420,15 +433,18 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
     };
 
     private onFinishJob = (): void => {
-        // TODO!
+        const { onSubmitJob, jobInstance } = this.props;
+        onSubmitJob(jobInstance);
     };
 
     private onReviewAccept = (): void => {
-        // TODO!
+        const { onReviewAccept, jobInstance } = this.props;
+        onReviewAccept(jobInstance.id);
     };
 
     private onReviewReject = (): void => {
-        // TODO!
+        const { onReviewReject, jobInstance } = this.props;
+        onReviewReject(jobInstance.id);
     };
 
     private onChangePlayerSliderValue = (value: number): void => {

@@ -397,6 +397,26 @@ function build() {
                 const result = await PluginRegistry.apiWrapper(cvat.jobs.get, filter);
                 return result;
             },
+
+            async submit(jobID) {
+                const result = await PluginRegistry.apiWrapper(cvat.jobs.submit, jobID);
+                return result;
+            },
+
+            async claim(jobID) {
+                const result = await PluginRegistry.apiWrapper(cvat.jobs.claim, jobID);
+                return result;
+            },
+
+            async review(jobID, reviewResult) {
+                const result = await PluginRegistry.apiWrapper(cvat.jobs.review, jobID, reviewResult);
+                return result;
+            },
+
+            async reviewable(jobID) {
+                const result = await PluginRegistry.apiWrapper(cvat.jobs.reviewable, jobID);
+                return result;
+            },
         },
         /**
          * Namespace is used for getting users

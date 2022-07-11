@@ -185,6 +185,11 @@ const config = require('./config');
             return jobs;
         };
 
+        cvat.jobs.review.implementation = async (jobID, reviewResult) => serverProxy.jobs.review(jobID, reviewResult);
+        cvat.jobs.submit.implementation = async (jobID) => serverProxy.jobs.submit(jobID);
+        cvat.jobs.claim.implementation = async (jobID) => serverProxy.jobs.claim(jobID);
+        cvat.jobs.reviewable.implementation = async (jobID) => serverProxy.jobs.reviewable(jobID);
+
         cvat.tasks.get.implementation = async (filter) => {
             checkFilter(filter, {
                 page: isInteger,

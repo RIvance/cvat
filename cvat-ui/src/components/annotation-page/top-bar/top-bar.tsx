@@ -132,6 +132,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
     return (
         <Row justify='space-between'>
             <LeftGroup
+                jobInstance={jobInstance}
                 reviewOnly={reviewOnly}
                 saving={saving}
                 savingStatuses={savingStatuses}
@@ -188,6 +189,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                 </Row>
             </Col>
             <RightGroup
+                reviewOnly={reviewOnly}
                 predictor={predictor}
                 workspace={workspace}
                 switchPredictor={switchPredictor}

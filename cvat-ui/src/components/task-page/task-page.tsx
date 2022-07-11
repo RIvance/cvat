@@ -53,7 +53,9 @@ class TaskPageComponent extends React.PureComponent<Props> {
     }
 
     public render(): JSX.Element {
-        const { task, updating, fetching } = this.props;
+        const {
+            user, task, updating, fetching,
+        } = this.props;
 
         if (task === null || fetching) {
             return <Spin size='large' className='cvat-spinner' />;
@@ -82,7 +84,7 @@ class TaskPageComponent extends React.PureComponent<Props> {
                     <Col md={22} lg={18} xl={16} xxl={14}>
                         <TopBarComponent taskInstance={(task as Task).instance} />
                         <DetailsContainer task={task as Task} />
-                        <JobListContainer task={task as Task} />
+                        <JobListContainer user={user} task={task as Task} />
                     </Col>
                 </Row>
                 <ModelRunnerModal />

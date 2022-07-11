@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -22,6 +22,7 @@ import {
 } from 'reducers/interfaces';
 
 interface Props {
+    reviewOnly: boolean;
     workspace: Workspace;
     predictor: PredictorState;
     isTrainingActive: boolean;
@@ -35,6 +36,7 @@ interface Props {
 
 function RightGroup(props: Props): JSX.Element {
     const {
+        reviewOnly,
         showStatistics,
         changeWorkspace,
         switchPredictor,
@@ -169,6 +171,7 @@ function RightGroup(props: Props): JSX.Element {
             </Button>
             <div>
                 <Select
+                    disabled={reviewOnly}
                     dropdownClassName='cvat-workspace-selector-dropdown'
                     className='cvat-workspace-selector'
                     onChange={changeWorkspace}

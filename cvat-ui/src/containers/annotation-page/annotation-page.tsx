@@ -9,7 +9,7 @@ import { RouteComponentProps } from 'react-router';
 import AnnotationPageComponent from 'components/annotation-page/annotation-page';
 import {
     getJobAsync, saveLogsAsync, changeFrameAsync,
-    closeJob as closeJobAction,
+    closeJob as closeJobAction, changeWorkspace,
 } from 'actions/annotation-actions';
 
 import { CombinedState, Workspace } from 'reducers/interfaces';
@@ -30,6 +30,7 @@ interface StateToProps {
 interface DispatchToProps {
     getJob(): void;
     changeFrame(frame: number): void;
+    changeWorkspace(workspace: Workspace): void;
     saveLogs(): void;
     closeJob(): void;
 }
@@ -99,6 +100,9 @@ function mapDispatchToProps(dispatch: any, own: OwnProps): DispatchToProps {
         },
         changeFrame(frame: number): void {
             dispatch(changeFrameAsync(frame));
+        },
+        changeWorkspace(workspace: Workspace) {
+            dispatch(changeWorkspace(workspace));
         },
     };
 }

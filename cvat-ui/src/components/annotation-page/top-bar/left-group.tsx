@@ -16,8 +16,10 @@ import {
 } from 'icons';
 import { ActiveControl, ToolsBlockerState } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
+import { useHistory } from 'react-router';
 
 interface Props {
+    jobInstance: any;
     reviewOnly: boolean;
     saving: boolean;
     savingStatuses: string[];
@@ -42,6 +44,7 @@ interface Props {
 
 function LeftGroup(props: Props): JSX.Element {
     const {
+        jobInstance,
         reviewOnly,
         saving,
         savingStatuses,
@@ -76,6 +79,7 @@ function LeftGroup(props: Props): JSX.Element {
         [ActiveControl.OPENCV_TOOLS, ActiveControl.AI_TOOLS].includes(activeControl) && toolsBlockerState.buttonVisible;
 
     const shouldEnableToolsBlockerOnClick = [ActiveControl.OPENCV_TOOLS].includes(activeControl);
+    const history = useHistory();
 
     return (
         <>
@@ -93,23 +97,27 @@ function LeftGroup(props: Props): JSX.Element {
                         Menu
                     </Button>
                 </Dropdown>
-                <CVATTooltip overlay={`Save current changes ${saveShortcut}`}>
-                    <Button
-                        onClick={saving ? undefined : onSaveAnnotation}
-                        type='link'
-                        className={saving ? 'cvat-annotation-disabled-header-button' : 'cvat-annotation-header-button'}
-                    >
-                        <Icon component={SaveIcon} />
-                        {saving ? 'Saving...' : 'Save'}
-                    </Button>
-                </CVATTooltip>
-                {reviewOnly ? (
+                {!reviewOnly ? (
                     <>
+                        <CVATTooltip overlay={`Save current changes ${saveShortcut}`}>
+                            <Button
+                                onClick={saving ? undefined : onSaveAnnotation}
+                                type='link'
+                                className={saving ? 'cvat-annotation-disabled-header-button' : 'cvat-annotation-header-button'}
+                            >
+                                <Icon component={SaveIcon} />
+                                {saving ? 'Saving...' : 'Save'}
+                            </Button>
+                        </CVATTooltip>
                         <CVATTooltip overlay='Finish Annotation'>
                             <Button
                                 type='link'
                                 className='cvat-annotation-header-button'
-                                onClick={reviewOnly ? undefined : onFinishJob}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    onFinishJob();
+                                    history.push(`tasks/${jobInstance.taskId}`);
+                                }}
                             >
                                 <Icon component={CheckIcon} />
                                 Finish
@@ -144,7 +152,11 @@ function LeftGroup(props: Props): JSX.Element {
                             <Button
                                 type='link'
                                 className='cvat-annotation-header-button'
-                                onClick={onReviewAccept}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    onReviewAccept();
+                                    history.push(`tasks/${jobInstance.taskId}`);
+                                }}
                             >
                                 <Icon component={CheckIcon} />
                                 Accept
@@ -154,7 +166,11 @@ function LeftGroup(props: Props): JSX.Element {
                             <Button
                                 type='link'
                                 className='cvat-annotation-header-button'
-                                onClick={onReviewReject}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    onReviewReject();
+                                    history.push(`tasks/${jobInstance.taskId}`);
+                                }}
                             >
                                 <Icon component={CheckIcon} />
                                 Reject

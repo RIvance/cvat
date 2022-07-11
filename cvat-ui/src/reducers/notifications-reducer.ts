@@ -1299,6 +1299,36 @@ export default function (state = defaultState, action: AnyAction): Notifications
                 },
             };
         }
+        case JobsActionTypes.CHECK_JOB_REVIEWABLE_FAILED: {
+            return {
+                ...state,
+                errors: {
+                    ...state.errors,
+                    cloudStorages: {
+                        ...state.errors.cloudStorages,
+                        fetching: {
+                            message: 'Fail to check if the job is reviewable',
+                            reason: action.payload.error.toString(),
+                        },
+                    },
+                },
+            };
+        }
+        case JobsActionTypes.CHECK_JOB_REVIEWABLE_FORBIDDEN: {
+            return {
+                ...state,
+                errors: {
+                    ...state.errors,
+                    cloudStorages: {
+                        ...state.errors.cloudStorages,
+                        fetching: {
+                            message: 'You cannot review this job',
+                            reason: action.payload.reason.toString(),
+                        },
+                    },
+                },
+            };
+        }
         case CloudStorageActionTypes.GET_CLOUD_STORAGE_FAILED: {
             return {
                 ...state,
@@ -1579,6 +1609,58 @@ export default function (state = defaultState, action: AnyAction): Notifications
                 },
             };
         }
+
+        case TasksActionTypes.CLAIM_JOB_FAILED: {
+            return {
+                ...state,
+                errors: {
+                    ...state.errors,
+                    jobs: {
+                        ...state.errors.jobs,
+                        fetching: {
+                            message: 'Unable to claim job',
+                            reason: action.payload.error.toString(),
+                            className: 'cvat-notification-notice-update-organization-membership-failed',
+                        },
+                    },
+                },
+            };
+        }
+
+        case JobsActionTypes.SUBMIT_JOB_FAILED: {
+            return {
+                ...state,
+                errors: {
+                    ...state.errors,
+                    jobs: {
+                        ...state.errors.jobs,
+                        fetching: {
+                            message: 'Unable to submit job',
+                            reason: action.payload.error.toString(),
+                            className: 'cvat-notification-notice-update-organization-membership-failed',
+                        },
+                    },
+                },
+            };
+        }
+
+        case JobsActionTypes.SUBMIT_JOB_REVIEW_FAILED: {
+            return {
+                ...state,
+                errors: {
+                    ...state.errors,
+                    jobs: {
+                        ...state.errors.jobs,
+                        fetching: {
+                            message: 'Unable to submit job review',
+                            reason: action.payload.error.toString(),
+                            className: 'cvat-notification-notice-update-organization-membership-failed',
+                        },
+                    },
+                },
+            };
+        }
+
         case JobsActionTypes.GET_JOBS_FAILED: {
             return {
                 ...state,

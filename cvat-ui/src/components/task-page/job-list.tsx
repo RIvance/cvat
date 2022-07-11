@@ -16,14 +16,13 @@ import copy from 'copy-to-clipboard';
 
 import { JobStage, JobState } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
-import getCore from 'cvat-core-wrapper';
-
-const core = getCore();
-const apiBaseURL = core.config.backendAPI;
 
 interface Props {
+    user: any,
     taskInstance: any;
     onJobUpdate(jobInstance: any): void;
+    onClaimJob(jobInstance: any, afterClaim?: () => void): void;
+    onCheckReviewable(jobInstance: any, ifReviewable: () => void): void;
 }
 
 // function ReviewSummaryComponent({ jobInstance }: { jobInstance: any }): JSX.Element {
@@ -85,6 +84,9 @@ interface Props {
 
 function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
     const {
+        user,
+        onClaimJob,
+        onCheckReviewable,
         taskInstance,
         history: { push },
     } = props;
@@ -214,16 +216,22 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
                 <Button
                     className='cvat-button-active'
                     onClick={(e: React.MouseEvent): void => {
-                        core.server.request(`${apiBaseURL}/jobs/${jobInstance.id}/claim`, {
-                            method: 'PATCH',
-                        });
                         e.preventDefault();
-                        push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
+                        if (jobInstance.stage === JobStage.REVIEW) {
+                            onCheckReviewable(jobInstance, () => {
+                                push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
+                            });
+                        } else {
+                            onClaimJob(jobInstance, () => {
+                                push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
+                            });
+                        }
                     }}
                     disabled={
-                        jobInstance.state === JobState.COMPLETED || jobInstance.assignee != null
+                        jobInstance.state === JobState.COMPLETED ||
+                        (jobInstance.state === JobState.IN_PROGRESS && jobInstance.stage !== JobStage.REVIEW) ||
+                        (jobInstance.assignee && jobInstance.assignee.id === user.id)
                     }
-                    href={`/tasks/${taskId}/jobs/${jobInstance.id}`}
                 >
                     {(() => {
                         if (jobInstance.stage === JobStage.ANNOTATION) {
