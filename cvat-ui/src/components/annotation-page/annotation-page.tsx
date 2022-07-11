@@ -18,7 +18,7 @@ import TagAnnotationWorkspace from 'components/annotation-page/tag-annotation-wo
 import FiltersModalComponent from 'components/annotation-page/top-bar/filters-modal';
 import StatisticsModalComponent from 'components/annotation-page/top-bar/statistics-modal';
 import AnnotationTopBarContainer from 'containers/annotation-page/top-bar/top-bar';
-import { Workspace } from 'reducers/interfaces';
+import { JobStage, JobViewMode, Workspace } from 'reducers/interfaces';
 import { usePrevious } from 'utils/hooks';
 import './styles.scss';
 import Button from 'antd/lib/button';
@@ -139,16 +139,29 @@ export default function AnnotationPageComponent(props: Props): JSX.Element {
         );
     }
 
-    const reviewOnly = job.assignee !== null && !(user.isStaff || user.id === job.assignee.id);
+    const viewModeEditCondition = (
+        user.isStaff ||
+        (job.assignee !== null && user.id === job.assignee.id && job.stage === JobStage.ANNOTATION)
+    );
 
-    if (reviewOnly) {
+    const viewModePreviewCondition = (
+        (job.stage === JobStage.REVIEW && (job.assignee !== null && user.id !== job.assignee.id))
+    );
+
+    const viewMode = (
+        viewModeEditCondition ? JobViewMode.EDIT :
+            viewModePreviewCondition ? JobViewMode.REVIEW :
+                JobViewMode.PREVIEW
+    );
+
+    if (viewMode !== JobViewMode.EDIT) {
         changeWorkspace(Workspace.REVIEW_WORKSPACE);
     }
 
     return (
         <Layout className='cvat-annotation-page'>
             <Layout.Header className='cvat-annotation-header'>
-                <AnnotationTopBarContainer reviewOnly={reviewOnly} />
+                <AnnotationTopBarContainer viewMode={viewMode} />
             </Layout.Header>
             {workspace === Workspace.STANDARD3D && (
                 <Layout.Content className='cvat-annotation-layout-content'>

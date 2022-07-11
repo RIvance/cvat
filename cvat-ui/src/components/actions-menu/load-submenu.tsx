@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -11,6 +11,7 @@ import { UploadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { DimensionType } from '../../reducers/interfaces';
 
 interface Props {
+    disabled: boolean,
     menuKey: string;
     loaders: any[];
     loadActivity: string | null;
@@ -20,11 +21,15 @@ interface Props {
 
 export default function LoadSubmenu(props: Props): JSX.Element {
     const {
-        menuKey, loaders, loadActivity, onFileUpload, taskDimension,
+        disabled, menuKey, loaders, loadActivity, onFileUpload, taskDimension,
     } = props;
 
     return (
-        <Menu.SubMenu key={menuKey} title='Upload annotations'>
+        <Menu.SubMenu
+            key={menuKey}
+            title='Upload annotations'
+            disabled={disabled}
+        >
             {loaders
                 .sort((a: any, b: any) => a.name.localeCompare(b.name))
                 .filter((loader: any): boolean => loader.dimension === taskDimension)
@@ -35,10 +40,10 @@ export default function LoadSubmenu(props: Props): JSX.Element {
                             .map((x: string) => `.${x.trimStart()}`)
                             .join(', '); // add '.' to each extension in a list
                         const pending = loadActivity === loader.name;
-                        const disabled = !loader.enabled || !!loadActivity;
+                        const itemDisabled = disabled || !loader.enabled || !!loadActivity;
                         const format = loader.name;
                         return (
-                            <Menu.Item key={format} disabled={disabled} className='cvat-menu-load-submenu-item'>
+                            <Menu.Item key={format} disabled={itemDisabled} className='cvat-menu-load-submenu-item'>
                                 <Upload
                                     accept={accept}
                                     multiple={false}

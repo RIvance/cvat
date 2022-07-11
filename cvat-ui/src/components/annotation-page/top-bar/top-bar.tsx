@@ -7,7 +7,7 @@ import Input from 'antd/lib/input';
 import { Col, Row } from 'antd/lib/grid';
 
 import {
-    ActiveControl, PredictorState, ToolsBlockerState, Workspace,
+    ActiveControl, JobViewMode, PredictorState, ToolsBlockerState, Workspace,
 } from 'reducers/interfaces';
 import LeftGroup from './left-group';
 import PlayerButtons from './player-buttons';
@@ -15,7 +15,7 @@ import PlayerNavigation from './player-navigation';
 import RightGroup from './right-group';
 
 interface Props {
-    reviewOnly: boolean;
+    viewMode: JobViewMode;
     playing: boolean;
     saving: boolean;
     savingStatuses: string[];
@@ -73,7 +73,7 @@ interface Props {
 
 export default function AnnotationTopBarComponent(props: Props): JSX.Element {
     const {
-        reviewOnly,
+        viewMode,
         saving,
         savingStatuses,
         undoAction,
@@ -133,7 +133,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         <Row justify='space-between'>
             <LeftGroup
                 jobInstance={jobInstance}
-                reviewOnly={reviewOnly}
+                viewMode={viewMode}
                 saving={saving}
                 savingStatuses={savingStatuses}
                 undoAction={undoAction}
@@ -189,7 +189,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                 </Row>
             </Col>
             <RightGroup
-                reviewOnly={reviewOnly}
+                viewMode={viewMode}
                 predictor={predictor}
                 workspace={workspace}
                 switchPredictor={switchPredictor}

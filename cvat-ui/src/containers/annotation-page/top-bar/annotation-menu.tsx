@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MenuInfo } from 'rc-menu/lib/interface';
 
-import { CombinedState, JobStage } from 'reducers/interfaces';
+import { CombinedState, JobStage, JobViewMode } from 'reducers/interfaces';
 import AnnotationMenuComponent, { Actions } from 'components/annotation-page/top-bar/annotation-menu';
 import { updateJobAsync } from 'actions/tasks-actions';
 import {
@@ -23,7 +23,7 @@ import getCore from 'cvat-core-wrapper';
 const core = getCore();
 
 interface OwnProps {
-    reviewOnly: boolean;
+    viewMode: JobViewMode;
 }
 
 interface StateToProps {
@@ -95,7 +95,7 @@ type Props = StateToProps & DispatchToProps & RouteComponentProps & OwnProps;
 
 function AnnotationMenuContainer(props: Props): JSX.Element {
     const {
-        reviewOnly,
+        viewMode,
         jobInstance,
         stopFrame,
         annotationFormats: { loaders, dumpers },
@@ -141,7 +141,7 @@ function AnnotationMenuContainer(props: Props): JSX.Element {
 
     return (
         <AnnotationMenuComponent
-            reviewOnly={reviewOnly}
+            viewMode={viewMode}
             taskMode={jobInstance.mode}
             loaders={loaders}
             dumpers={dumpers}

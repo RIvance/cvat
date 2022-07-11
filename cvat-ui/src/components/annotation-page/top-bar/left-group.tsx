@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { Col } from 'antd/lib/grid';
-import Icon, { StopOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import Icon, { CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
 import Modal from 'antd/lib/modal';
 import Button from 'antd/lib/button';
 import Timeline from 'antd/lib/timeline';
@@ -12,15 +12,15 @@ import Dropdown from 'antd/lib/dropdown';
 
 import AnnotationMenuContainer from 'containers/annotation-page/top-bar/annotation-menu';
 import {
-    MainMenuIcon, SaveIcon, UndoIcon, RedoIcon, CheckIcon,
+    CheckIcon, MainMenuIcon, RedoIcon, SaveIcon, UndoIcon,
 } from 'icons';
-import { ActiveControl, ToolsBlockerState } from 'reducers/interfaces';
+import { ActiveControl, JobViewMode, ToolsBlockerState } from 'reducers/interfaces';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import { useHistory } from 'react-router';
 
 interface Props {
     jobInstance: any;
-    reviewOnly: boolean;
+    viewMode: JobViewMode;
     saving: boolean;
     savingStatuses: string[];
     undoAction?: string;
@@ -45,7 +45,7 @@ interface Props {
 function LeftGroup(props: Props): JSX.Element {
     const {
         jobInstance,
-        reviewOnly,
+        viewMode,
         saving,
         savingStatuses,
         undoAction,
@@ -91,13 +91,13 @@ function LeftGroup(props: Props): JSX.Element {
                 </Timeline>
             </Modal>
             <Col className='cvat-annotation-header-left-group'>
-                <Dropdown overlay={<AnnotationMenuContainer reviewOnly={reviewOnly} />}>
+                <Dropdown overlay={<AnnotationMenuContainer viewMode={viewMode} />}>
                     <Button type='link' className='cvat-annotation-header-button'>
                         <Icon component={MainMenuIcon} />
                         Menu
                     </Button>
                 </Dropdown>
-                {!reviewOnly ? (
+                {(viewMode === JobViewMode.EDIT ? (
                     <>
                         <CVATTooltip overlay={`Save current changes ${saveShortcut}`}>
                             <Button
@@ -146,37 +146,39 @@ function LeftGroup(props: Props): JSX.Element {
                             </Button>
                         </CVATTooltip>
                     </>
-                ) : /* else if not reviewOnly */ (
-                    <>
-                        <CVATTooltip overlay='Finish review and accept the annotation'>
-                            <Button
-                                type='link'
-                                className='cvat-annotation-header-button'
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onReviewAccept();
-                                    history.push(`tasks/${jobInstance.taskId}`);
-                                }}
-                            >
-                                <Icon component={CheckIcon} />
+                ) :
+                    viewMode === JobViewMode.REVIEW ? (
+                        <>
+                            <CVATTooltip overlay='Finish review and accept the annotation'>
+                                <Button
+                                    type='link'
+                                    className='cvat-annotation-header-button'
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        onReviewAccept();
+                                        history.push(`tasks/${jobInstance.taskId}`);
+                                    }}
+                                >
+                                    <Icon component={CheckIcon} />
                                 Accept
-                            </Button>
-                        </CVATTooltip>
-                        <CVATTooltip overlay='Finish review and reject the annotation'>
-                            <Button
-                                type='link'
-                                className='cvat-annotation-header-button'
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onReviewReject();
-                                    history.push(`tasks/${jobInstance.taskId}`);
-                                }}
-                            >
-                                <Icon component={CheckIcon} />
+                                </Button>
+                            </CVATTooltip>
+                            <CVATTooltip overlay='Finish review and reject the annotation'>
+                                <Button
+                                    type='link'
+                                    className='cvat-annotation-header-button'
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        onReviewReject();
+                                        history.push(`tasks/${jobInstance.taskId}`);
+                                    }}
+                                >
+                                    <Icon component={CheckIcon} />
                                 Reject
-                            </Button>
-                        </CVATTooltip>
-                    </>
+                                </Button>
+                            </CVATTooltip>
+                        </>
+                    ) : null
                 )}
                 {includesDoneButton ? (
                     <CVATTooltip overlay={`Press "${drawShortcut}" to finish`}>

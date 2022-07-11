@@ -134,7 +134,7 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
 
     const columns = [
         {
-            title: 'Job',
+            title: 'Preview',
             dataIndex: 'job',
             key: 'job',
             render: (id: number): JSX.Element => (

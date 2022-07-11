@@ -36,7 +36,7 @@ import {
     PredictorState,
     DimensionType,
     ActiveControl,
-    ToolsBlockerState,
+    ToolsBlockerState, JobViewMode,
 } from 'reducers/interfaces';
 import isAbleToChangeFrame from 'utils/is-able-to-change-frame';
 import GlobalHotKeys, { KeyMap } from 'utils/mousetrap-react';
@@ -44,7 +44,7 @@ import { switchToolsBlockerState } from 'actions/settings-actions';
 import { submitJobReviewAsync, submitJobAsync } from '../../../actions/jobs-actions';
 
 interface OwnProps {
-    reviewOnly: boolean;
+    viewMode: JobViewMode;
 }
 
 interface StateToProps {
@@ -589,7 +589,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
     public render(): JSX.Element {
         const { nextButtonType, prevButtonType } = this.state;
         const {
-            reviewOnly,
+            viewMode,
             playing,
             saving,
             savingStatuses,
@@ -703,7 +703,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             <>
                 <GlobalHotKeys keyMap={subKeyMap} handlers={handlers} />
                 <AnnotationTopBarComponent
-                    reviewOnly={reviewOnly}
+                    viewMode={viewMode}
                     showStatistics={this.showStatistics}
                     showFilters={this.showFilters}
                     onSwitchPlay={this.onSwitchPlay}

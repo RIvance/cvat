@@ -15,14 +15,14 @@ import moment from 'moment';
 import { useSelector } from 'react-redux';
 
 import {
-    FilterIcon, FullscreenIcon, InfoIcon, BrainIcon,
+    BrainIcon, FilterIcon, FullscreenIcon, InfoIcon,
 } from 'icons';
 import {
-    CombinedState, DimensionType, Workspace, PredictorState,
+    CombinedState, DimensionType, JobViewMode, PredictorState, Workspace,
 } from 'reducers/interfaces';
 
 interface Props {
-    reviewOnly: boolean;
+    viewMode: JobViewMode;
     workspace: Workspace;
     predictor: PredictorState;
     isTrainingActive: boolean;
@@ -30,13 +30,12 @@ interface Props {
     switchPredictor(predictorEnabled: boolean): void;
     showFilters(): void;
     changeWorkspace(workspace: Workspace): void;
-
     jobInstance: any;
 }
 
 function RightGroup(props: Props): JSX.Element {
     const {
-        reviewOnly,
+        viewMode,
         showStatistics,
         changeWorkspace,
         switchPredictor,
@@ -171,7 +170,7 @@ function RightGroup(props: Props): JSX.Element {
             </Button>
             <div>
                 <Select
-                    disabled={reviewOnly}
+                    disabled={viewMode !== JobViewMode.EDIT}
                     dropdownClassName='cvat-workspace-selector-dropdown'
                     className='cvat-workspace-selector'
                     onChange={changeWorkspace}

@@ -303,6 +303,12 @@ export enum JobState {
     REJECTED = 'rejected',
 }
 
+export enum JobViewMode {
+    EDIT,
+    REVIEW,
+    PREVIEW,
+}
+
 export enum RQStatus {
     unknown = 'unknown',
     queued = 'queued',

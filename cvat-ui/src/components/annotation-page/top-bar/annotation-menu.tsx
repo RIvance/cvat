@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
-import { withRouter, RouteComponentProps } from 'react-router';
+import { RouteComponentProps, withRouter } from 'react-router';
 
 import Menu from 'antd/lib/menu';
 import Modal from 'antd/lib/modal';
@@ -17,9 +17,10 @@ import { MenuInfo } from 'rc-menu/lib/interface';
 
 import CVATTooltip from 'components/common/cvat-tooltip';
 import LoadSubmenu from 'components/actions-menu/load-submenu';
+import { JobViewMode } from 'reducers/interfaces';
 
 interface Props {
-    reviewOnly: boolean;
+    viewMode: JobViewMode;
     taskMode: string;
     loaders: any[];
     dumpers: any[];
@@ -44,6 +45,7 @@ export enum Actions {
 
 function AnnotationMenuComponent(props: Props & RouteComponentProps): JSX.Element {
     const {
+        viewMode,
         loaders,
         loadActivity,
         jobInstance,
@@ -180,8 +182,13 @@ function AnnotationMenuComponent(props: Props & RouteComponentProps): JSX.Elemen
     }
 
     return (
-        <Menu onClick={(params: MenuInfo) => onClickMenuWrapper(params)} className='cvat-annotation-menu' selectable={false}>
+        <Menu
+            onClick={(params: MenuInfo) => onClickMenuWrapper(params)}
+            className='cvat-annotation-menu'
+            selectable={false}
+        >
             {LoadSubmenu({
+                disabled: viewMode !== JobViewMode.EDIT,
                 loaders,
                 loadActivity,
                 onFileUpload: (format: string, file: File): void => {
@@ -204,8 +211,21 @@ function AnnotationMenuComponent(props: Props & RouteComponentProps): JSX.Elemen
                 menuKey: Actions.LOAD_JOB_ANNO,
                 taskDimension: jobInstance.dimension,
             })}
-            <Menu.Item key={Actions.EXPORT_TASK_DATASET}>Export task dataset</Menu.Item>
-            <Menu.Item key={Actions.REMOVE_ANNO}>Remove annotations</Menu.Item>
+
+            <Menu.Item
+                key={Actions.EXPORT_TASK_DATASET}
+                disabled={viewMode !== JobViewMode.EDIT}
+            >
+                Export task dataset
+            </Menu.Item>
+
+            <Menu.Item
+                key={Actions.REMOVE_ANNO}
+                disabled={viewMode !== JobViewMode.EDIT}
+            >
+                Remove annotations
+            </Menu.Item>
+
             <Menu.Item key={Actions.OPEN_TASK}>
                 <a
                     href={`/tasks/${taskID}`}
@@ -218,9 +238,6 @@ function AnnotationMenuComponent(props: Props & RouteComponentProps): JSX.Elemen
                     Open the task
                 </a>
             </Menu.Item>
-            {/* TODO! */}
-            {/* {[JobStage.ANNOTATION, JobStage.REVIEW].includes(jobStage) ? */}
-            {/*    <Menu.Item key={Actions.FINISH_JOB}>Finish the job</Menu.Item> : null} */}
         </Menu>
     );
 }
