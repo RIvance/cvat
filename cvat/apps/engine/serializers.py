@@ -215,7 +215,7 @@ class SimpleJobSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Job
-        fields = ('url', 'id', 'assignee', 'status', 'stage', 'state')
+        fields = ('url', 'id', 'assignee', 'status', 'stage', 'state', 'assign_time')
         read_only_fields = fields
 
 class SegmentSerializer(serializers.ModelSerializer):
@@ -1152,6 +1152,9 @@ class UserAssetsSerializer(serializers.ModelSerializer):
 
 class ReviewRecordSerializer(serializers.ModelSerializer):
 
+    user = BasicUserSerializer(allow_null=True)
+    job = SimpleJobSerializer()
+
     class Meta:
         model = models.ReviewRecord
         fields = ('result', 'job', 'reviewer')
@@ -1159,6 +1162,8 @@ class ReviewRecordSerializer(serializers.ModelSerializer):
 
 class TransactionSerializer(serializers.ModelSerializer):
 
+    # user = BasicUserSerializer(allow_null=True)
+
     class Meta:
         model = models.Transaction
-        fields = '__all__'
+        fields = ('amount', 'datetime', 'description')

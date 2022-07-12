@@ -5,7 +5,7 @@
 import React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { withRouter } from 'react-router-dom';
-import { Row, Col } from 'antd/lib/grid';
+import { Col, Row } from 'antd/lib/grid';
 import { CopyOutlined } from '@ant-design/icons';
 import { ColumnFilterItem } from 'antd/lib/table/interface';
 import Table from 'antd/lib/table';
@@ -174,7 +174,7 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
             },
         },
         {
-            title: 'State',
+            title: 'Status',
             dataIndex: 'state',
             key: 'state',
             className: 'cvat-job-item-state',
@@ -182,7 +182,7 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
                 const { state } = jobInstance;
                 return (
                     <Text type='secondary'>
-                        {state}
+                        {jobInstance.stage === JobStage.REVIEW ? 'review' : state}
                     </Text>
                 );
             },
@@ -196,7 +196,7 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
             onFilter: (value: string | number | boolean, record: any) => record.state.state === value,
         },
         {
-            title: 'Started on',
+            title: 'Modified',
             dataIndex: 'started',
             key: 'started',
             className: 'cvat-text-color',
@@ -212,41 +212,71 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
             dataIndex: 'assignee',
             key: 'assignee',
             className: 'cvat-job-item-assignee',
-            render: (jobInstance: any): JSX.Element => (
-                <Button
-                    className='cvat-button-active'
-                    onClick={(e: React.MouseEvent): void => {
-                        e.preventDefault();
-                        if (jobInstance.stage === JobStage.REVIEW) {
-                            onCheckReviewable(jobInstance, () => {
-                                push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
-                            });
-                        } else {
-                            onClaimJob(jobInstance, () => {
-                                push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
-                            });
+            render: (jobInstance: any): JSX.Element => {
+                const ASSIGN_DURATION_THRESHOLD = 3 * 24 * 3600 * 1000;
+                let shouldShow = jobInstance.state === JobState.NEW || jobInstance.state === JobState.REJECTED;
+
+                if (!shouldShow &&
+                    jobInstance.state === JobState.IN_PROGRESS &&
+                    jobInstance.stage === JobStage.ANNOTATION &&
+                    jobInstance.assignee
+                ) {
+                    if (jobInstance.assignee.id === user.id) {
+                        shouldShow = true;
+                    } else {
+                        const assignTime: Date = new Date(jobInstance.assign_time);
+                        const duration = new Date().getTime() - assignTime.getTime();
+                        if (duration > ASSIGN_DURATION_THRESHOLD) {
+                            shouldShow = true;
                         }
-                    }}
-                    disabled={
-                        jobInstance.state === JobState.COMPLETED ||
-                        (jobInstance.state === JobState.IN_PROGRESS && jobInstance.stage !== JobStage.REVIEW) ||
-                        (jobInstance.assignee && jobInstance.assignee.id === user.id)
                     }
-                >
-                    {(() => {
-                        if (jobInstance.stage === JobStage.ANNOTATION) {
-                            if (jobInstance.assignee != null) {
-                                return 'In Progress';
+                }
+
+                if (!shouldShow &&
+                    jobInstance.state === JobState.IN_PROGRESS &&
+                    jobInstance.stage === JobStage.REVIEW &&
+                    jobInstance.assignee &&
+                    jobInstance.assignee.id !== user.id
+                ) {
+                    shouldShow = true;
+                }
+
+                shouldShow = shouldShow && jobInstance.state !== JobState.COMPLETED;
+
+                return (!shouldShow ? <></> : (
+                    <Button
+                        className='cvat-button-active'
+                        onClick={(e: React.MouseEvent): void => {
+                            e.preventDefault();
+                            if (jobInstance.assignee && jobInstance.assignee.id === user.id) {
+                                push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
+                            } else if (jobInstance.stage === JobStage.REVIEW) {
+                                onCheckReviewable(jobInstance, () => {
+                                    push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
+                                });
+                            } else {
+                                onClaimJob(jobInstance, () => {
+                                    push(`/tasks/${taskId}/jobs/${jobInstance.id}`);
+                                });
                             }
-                            return 'Contribute';
-                        }
-                        if (jobInstance.stage === JobStage.REVIEW) {
-                            return 'Review';
-                        }
-                        return 'Completed';
-                    })()}
-                </Button>
-            ),
+                        }}
+                    >
+                        {(() => {
+                            if (jobInstance.stage === JobStage.ANNOTATION) {
+                                if (jobInstance.assignee != null) {
+                                    return 'Open';
+                                }
+                                return 'Contribute';
+                            }
+                            if (jobInstance.stage === JobStage.REVIEW) {
+                                return 'Review';
+                            }
+                            return 'Completed';
+                        })()}
+                    </Button>
+                )
+                );
+            },
             sorter: sorter('assignee.assignee.username'),
             filters: collectUsers('assignee'),
             onFilter: (value: string | number | boolean, record: any) => (
@@ -261,7 +291,7 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
             completed++;
         }
 
-        const created = moment(props.taskInstance.createdDate);
+        const assignTime = moment(job.assign_time);
 
         const now = moment(moment.now());
         acc.push({
@@ -270,8 +300,8 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
             frames: `${job.startFrame}-${job.stopFrame}`,
             state: job,
             stage: job,
-            started: `${created.format('MMMM Do YYYY HH:MM')}`,
-            duration: `${moment.duration(now.diff(created)).humanize()}`,
+            started: `${assignTime.format('MMMM Do YYYY HH:MM')}`,
+            duration: `${moment.duration(now.diff(assignTime)).humanize()}`,
             assignee: job,
         });
 

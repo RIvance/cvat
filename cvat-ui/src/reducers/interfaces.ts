@@ -96,6 +96,7 @@ export interface TasksState {
     importing: boolean;
     initialized: boolean;
     fetching: boolean;
+    lastClaimJobID: number;
     updating: boolean;
     hideEmpty: boolean;
     moveTask: {

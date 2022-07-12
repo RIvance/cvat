@@ -23,6 +23,7 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.utils import timezone
+from django.utils.timezone import utc
 
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
@@ -1267,25 +1268,25 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
 
     @action(detail=True, methods=['PATCH'], url_path='claim')
     def claim(self, request, pk):
+
+        # 3 days
+        DURATION_THRESHOLD_SECOND = 3 * 24 * 3600
+
         db_job: Job = self.get_object()
         rq_user = self.request.user
 
-        # TODO! filter time
+        last_assigned = db_job.assign_time
+        duration_sec = (datetime.utcnow().replace(tzinfo=utc) - last_assigned).total_seconds()
 
-        if db_job.assignee != None:
-            return Response(
-                "This job is already taken by someone",
-                status=status.HTTP_403_FORBIDDEN
-            )
+        if db_job.assignee is not None and duration_sec < DURATION_THRESHOLD_SECOND:
+            return Response("This job is already taken by someone")
 
         if Job.objects.filter(status=StatusChoice.ANNOTATION, assignee=rq_user).count() > 3:
-            return Response(
-                data="Each user can only takeup 3 tasks at the same time",
-                status=status.HTTP_200_OK
-            )
+            return Response("Each user can only takeup 3 tasks at the same time")
 
         db_job.assignee = rq_user
         db_job.state = StateChoice.IN_PROGRESS
+        db_job.assign_time = datetime.utcnow().replace(tzinfo=utc)
         db_job.save()
 
         return Response(data={'success': True}, status=status.HTTP_200_OK)
@@ -1363,6 +1364,8 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
             if len(reviews) == 2:
                 if all(review_results):
                     complete_job(db_job)
+                elif not any(review_results):
+                    reject_job(db_job)
             elif len(reviews) >= 3:
                 if review_results.count(True) >= 2:
                     complete_job(db_job)

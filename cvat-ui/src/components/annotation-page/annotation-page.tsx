@@ -27,6 +27,7 @@ import { changeWorkspace } from '../../actions/annotation-actions';
 interface Props {
     user: any;
     job: any | null | undefined;
+    lastClaimJobID: number;
     fetching: boolean;
     frameNumber: number;
     workspace: Workspace;
@@ -39,7 +40,7 @@ interface Props {
 
 export default function AnnotationPageComponent(props: Props): JSX.Element {
     const {
-        user, job, fetching, workspace, frameNumber, getJob, closeJob, saveLogs, changeFrame,
+        user, job, lastClaimJobID, fetching, workspace, frameNumber, getJob, closeJob, saveLogs, changeFrame,
     } = props;
     const prevJob = usePrevious(job);
     const prevFetching = usePrevious(fetching);
@@ -141,6 +142,7 @@ export default function AnnotationPageComponent(props: Props): JSX.Element {
 
     const viewModeEditCondition = (
         user.isStaff ||
+        (job.assignee === null && lastClaimJobID === job.id) ||
         (job.assignee !== null && user.id === job.assignee.id && job.stage === JobStage.ANNOTATION)
     );
 

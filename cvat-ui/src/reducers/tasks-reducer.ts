@@ -14,6 +14,7 @@ const defaultState: TasksState = {
     initialized: false,
     fetching: false,
     updating: false,
+    lastClaimJobID: -1,
     hideEmpty: false,
     moveTask: {
         modalVisible: false,
@@ -348,6 +349,12 @@ export default (state: TasksState = defaultState, action: AnyAction): TasksState
                     modalVisible: action.payload.visible,
                     taskId: action.payload.taskId,
                 },
+            };
+        }
+        case TasksActionTypes.CLAIM_JOB_SUCCESS: {
+            return {
+                ...state,
+                lastClaimJobID: action.payload.jobID,
             };
         }
         case BoundariesActionTypes.RESET_AFTER_ERROR:

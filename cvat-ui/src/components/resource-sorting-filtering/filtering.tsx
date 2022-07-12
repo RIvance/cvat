@@ -6,16 +6,14 @@ import React, { useState, useEffect } from 'react';
 import 'react-awesome-query-builder/lib/css/styles.css';
 import AntdConfig from 'react-awesome-query-builder/lib/config/antd';
 import {
-    Builder, Config, ImmutableTree, Query, Utils as QbUtils,
+    Config, ImmutableTree, Utils as QbUtils,
 } from 'react-awesome-query-builder';
 import {
-    DownOutlined, FilterFilled, FilterOutlined,
+    FilterFilled, FilterOutlined,
 } from '@ant-design/icons';
 import Dropdown from 'antd/lib/dropdown';
-import Space from 'antd/lib/space';
 import Button from 'antd/lib/button';
 import Checkbox, { CheckboxChangeEvent } from 'antd/lib/checkbox/Checkbox';
-import Menu from 'antd/lib/menu';
 import { useSelector } from 'react-redux';
 import { CombinedState } from 'reducers/interfaces';
 import { User } from 'components/task-page/user-selector';
@@ -41,25 +39,6 @@ export default function ResourceFilterHOC(
     const defaultTree = QbUtils.checkTree(
         QbUtils.loadTree({ id: QbUtils.uuid(), type: 'group' }), config,
     ) as ImmutableTree;
-
-    function keepFilterInLocalStorage(filter: string): void {
-        if (typeof filter !== 'string') {
-            return;
-        }
-
-        let savedItems: string[] = [];
-        try {
-            savedItems = JSON.parse(localStorage.getItem(localStorageRecentKeyword) || '[]');
-            if (!Array.isArray(savedItems) || savedItems.some((item: any) => typeof item !== 'string')) {
-                throw new Error('Wrong filters value stored');
-            }
-        } catch (_: any) {
-            // nothing to do
-        }
-        savedItems.splice(0, 0, filter);
-        savedItems = Array.from(new Set(savedItems)).slice(0, localStorageRecentCapacity);
-        localStorage.setItem(localStorageRecentKeyword, JSON.stringify(savedItems));
-    }
 
     function receiveRecentFilters(): Record<string, string> {
         let recentFilters: string[] = [];
@@ -113,14 +92,16 @@ export default function ResourceFilterHOC(
 
     function ResourceFilterComponent(props: ResourceFilterProps): JSX.Element {
         const {
-            predefinedVisible, builderVisible, recentVisible, value,
+            predefinedVisible, value,
             onPredefinedVisibleChange, onBuilderVisibleChange, onRecentVisibleChange, onApplyFilter,
         } = props;
 
         const user = useSelector((state: CombinedState) => state.auth.user);
         const [isMounted, setIsMounted] = useState<boolean>(false);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [recentFilters, setRecentFilters] = useState<Record<string, string>>({});
         const [appliedFilter, setAppliedFilter] = useState(defaultAppliedFilter);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [state, setState] = useState<ImmutableTree>(defaultTree);
 
         useEffect(() => {
@@ -179,14 +160,6 @@ export default function ResourceFilterHOC(
             }
         }, [appliedFilter]);
 
-        const renderBuilder = (builderProps: any): JSX.Element => (
-            <div className='query-builder-container'>
-                <div className='query-builder qb-lite'>
-                    <Builder {...builderProps} />
-                </div>
-            </div>
-        );
-
         const predefinedFilters = getPredefinedFilters(user);
         return (
             <div className='cvat-resource-page-filters'>
@@ -228,116 +201,8 @@ export default function ResourceFilterHOC(
                     )}
                 >
                     <Button type='default' onClick={() => onPredefinedVisibleChange(!predefinedVisible)}>
-                        Quick filters
+                        Filters
                         { appliedFilter.predefined ?
-                            <FilterFilled /> :
-                            <FilterOutlined />}
-                    </Button>
-                </Dropdown>
-                <Dropdown
-                    placement='bottomRight'
-                    visible={builderVisible}
-                    destroyPopupOnHide
-                    overlay={(
-                        <div className='cvat-resource-page-filters-builder'>
-                            { Object.keys(recentFilters).length ? (
-                                <Dropdown
-                                    placement='bottomRight'
-                                    visible={recentVisible}
-                                    destroyPopupOnHide
-                                    overlay={(
-                                        <div className='cvat-resource-page-recent-filters-list'>
-                                            <Menu selectable={false}>
-                                                {Object.keys(recentFilters).map((key: string): JSX.Element | null => {
-                                                    const tree = QbUtils.loadFromJsonLogic(JSON.parse(key), config);
-
-                                                    if (!tree) {
-                                                        return null;
-                                                    }
-
-                                                    return (
-                                                        <Menu.Item
-                                                            key={key}
-                                                            onClick={() => {
-                                                                if (appliedFilter.recent === key) {
-                                                                    setAppliedFilter(defaultAppliedFilter);
-                                                                } else {
-                                                                    setAppliedFilter({
-                                                                        ...defaultAppliedFilter,
-                                                                        recent: key,
-                                                                    });
-                                                                }
-                                                            }}
-                                                        >
-                                                            {QbUtils.queryString(tree, config)}
-                                                        </Menu.Item>
-                                                    );
-                                                })}
-                                            </Menu>
-                                        </div>
-                                    )}
-                                >
-                                    <Button
-                                        size='small'
-                                        type='text'
-                                        onClick={
-                                            () => onRecentVisibleChange(!recentVisible)
-                                        }
-                                    >
-                                        Recent
-                                        <DownOutlined />
-                                    </Button>
-                                </Dropdown>
-                            ) : null}
-
-                            <Query
-                                {...config}
-                                onChange={(tree: ImmutableTree) => {
-                                    setState(tree);
-                                }}
-                                value={state}
-                                renderBuilder={renderBuilder}
-                            />
-                            <Space className='cvat-resource-page-filters-space'>
-                                <Button
-                                    disabled={!QbUtils.queryString(state, config)}
-                                    size='small'
-                                    onClick={() => {
-                                        setState(defaultTree);
-                                        setAppliedFilter({
-                                            ...appliedFilter,
-                                            recent: null,
-                                            built: null,
-                                        });
-                                    }}
-                                >
-                                    Reset
-                                </Button>
-                                <Button
-                                    size='small'
-                                    type='primary'
-                                    onClick={() => {
-                                        const filter = QbUtils.jsonLogicFormat(state, config).logic;
-                                        const stringified = JSON.stringify(filter);
-                                        keepFilterInLocalStorage(stringified);
-                                        setRecentFilters(receiveRecentFilters());
-                                        onBuilderVisibleChange(false);
-                                        setAppliedFilter({
-                                            predefined: null,
-                                            recent: null,
-                                            built: stringified,
-                                        });
-                                    }}
-                                >
-                                    Apply
-                                </Button>
-                            </Space>
-                        </div>
-                    )}
-                >
-                    <Button type='default' onClick={() => onBuilderVisibleChange(!builderVisible)}>
-                        Filter
-                        { appliedFilter.built || appliedFilter.recent ?
                             <FilterFilled /> :
                             <FilterOutlined />}
                     </Button>

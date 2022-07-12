@@ -1,7 +1,7 @@
 # Copyright (C) 2018-2019 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
-
+import datetime
 import os
 import re
 import shutil
@@ -387,7 +387,7 @@ class Job(models.Model):
         default=StageChoice.ANNOTATION)
     state = models.CharField(max_length=32, choices=StateChoice.choices(),
         default=StateChoice.NEW)
-    # assign_time = models.DateTimeField()
+    assign_time = models.DateTimeField(auto_now_add=True)
 
     def get_project_id(self):
         project = self.segment.task.project

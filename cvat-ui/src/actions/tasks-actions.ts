@@ -522,10 +522,10 @@ function claimJob(): AnyAction {
     };
 }
 
-function claimJobSuccess(): AnyAction {
+function claimJobSuccess(jobID: number): AnyAction {
     return {
         type: TasksActionTypes.CLAIM_JOB_SUCCESS,
-        payload: {},
+        payload: { jobID },
     };
 }
 
@@ -542,7 +542,7 @@ export function claimJobAsync(jobInstance: any, after?: () => void): ThunkAction
             dispatch(claimJob());
             const result = await cvat.jobs.claim(jobInstance.id);
             if (result.data.success) {
-                dispatch(claimJobSuccess());
+                dispatch(claimJobSuccess(jobInstance.id));
                 if (after) {
                     after();
                 }

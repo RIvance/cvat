@@ -22,6 +22,7 @@ type OwnProps = RouteComponentProps<{
 interface StateToProps {
     user: any;
     job: any | null | undefined;
+    lastClaimJobID: number;
     frameNumber: number;
     fetching: boolean;
     workspace: Workspace;
@@ -48,11 +49,15 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
                 },
             },
         },
+        tasks: {
+            lastClaimJobID,
+        },
     } = state;
 
     return {
         user: state.auth.user,
         job: jobID === requestedId ? job : null,
+        lastClaimJobID,
         fetching,
         workspace,
         frameNumber,

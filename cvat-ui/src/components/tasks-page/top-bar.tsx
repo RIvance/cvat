@@ -5,10 +5,8 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router';
 import { Row, Col } from 'antd/lib/grid';
-import Dropdown from 'antd/lib/dropdown';
-import { PlusOutlined, UploadOutlined, LoadingOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import Button from 'antd/lib/button';
-import Upload from 'antd/lib/upload';
 import Input from 'antd/lib/input';
 
 import { SortingComponent, ResourceFilterHOC, defaultVisibility } from 'components/resource-sorting-filtering';
@@ -33,7 +31,7 @@ interface VisibleTopBarProps {
 
 export default function TopBarComponent(props: VisibleTopBarProps): JSX.Element {
     const {
-        importing, query, onApplyFilter, onApplySorting, onApplySearch, onImportTask,
+        importing, query, onApplyFilter, onApplySorting, onApplySearch,
     } = props;
     const [visibility, setVisibility] = useState(defaultVisibility);
     const history = useHistory();
@@ -87,43 +85,14 @@ export default function TopBarComponent(props: VisibleTopBarProps): JSX.Element 
                     </div>
                 </div>
                 <div>
-                    <Dropdown
-                        trigger={['click']}
-                        overlay={(
-                            <div className='cvat-tasks-page-control-buttons-wrapper'>
-                                <Button
-                                    className='cvat-create-task-button'
-                                    type='primary'
-                                    onClick={(): void => history.push('/tasks/create')}
-                                    icon={<PlusOutlined />}
-                                >
-                                    Create a new task
-                                </Button>
-                                <Upload
-                                    accept='.zip'
-                                    multiple={false}
-                                    showUploadList={false}
-                                    beforeUpload={(file: File): boolean => {
-                                        onImportTask(file);
-                                        return false;
-                                    }}
-                                    className='cvat-import-task'
-                                >
-                                    <Button
-                                        className='cvat-import-task-button'
-                                        type='primary'
-                                        disabled={importing}
-                                        icon={<UploadOutlined />}
-                                    >
-                                        Create from backup
-                                        {importing && <LoadingOutlined />}
-                                    </Button>
-                                </Upload>
-                            </div>
-                        )}
+                    <Button
+                        className='cvat-create-task-button'
+                        type='primary'
+                        onClick={(): void => history.push('/tasks/create')}
+                        icon={<PlusOutlined />}
                     >
-                        <Button type='primary' className='cvat-create-task-dropdown' icon={<PlusOutlined />} />
-                    </Dropdown>
+                        Create a new task
+                    </Button>
                 </div>
             </Col>
         </Row>
