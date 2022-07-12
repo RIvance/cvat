@@ -328,7 +328,8 @@ class UserPermission(OpenPolicyAgentPermission):
             'retrieve': 'view',
             'partial_update': 'update',
             'destroy': 'delete',
-            'fund': 'view'
+            'fund': 'view',
+            'transactions': 'view',
         }.get(view.action)]
 
     @classmethod

@@ -1155,3 +1155,10 @@ class ReviewRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ReviewRecord
         fields = ('result', 'job', 'reviewer')
+
+
+class TransactionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Transaction
+        fields = '__all__'

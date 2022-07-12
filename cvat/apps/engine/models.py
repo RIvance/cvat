@@ -732,4 +732,5 @@ class Transaction(models.Model):
 
     amount = models.IntegerField()
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    datetime = models.DateTimeField()
+    datetime = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(blank=True)

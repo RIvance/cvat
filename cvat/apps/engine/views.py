@@ -50,7 +50,7 @@ from cvat.apps.engine.mime_types import mimetypes
 from cvat.apps.engine.models import (
     Job, ReviewRecord, Segment, StageChoice, StateChoice, StatusChoice, Task, Project, Issue, Data,
     Comment, StorageMethodChoice, StorageChoice, Image,
-    CloudProviderChoice, UserAssets
+    CloudProviderChoice, UserAssets, Transaction
 )
 from cvat.apps.engine.models import CloudStorage as CloudStorageModel
 from cvat.apps.engine.serializers import (
@@ -60,7 +60,7 @@ from cvat.apps.engine.serializers import (
     LogEventSerializer, ProjectSerializer, ProjectSearchSerializer,
     RqStatusSerializer, TaskSerializer, UserSerializer, PluginsSerializer, IssueReadSerializer,
     IssueWriteSerializer, CommentReadSerializer, CommentWriteSerializer, CloudStorageWriteSerializer,
-    CloudStorageReadSerializer, DatasetFileSerializer, JobCommitSerializer
+    CloudStorageReadSerializer, DatasetFileSerializer, JobCommitSerializer, TransactionSerializer
 )
 
 from utils.dataset_manifest import ImageManifestManager
@@ -73,6 +73,23 @@ from .log import clogger, slogger
 from cvat.apps.iam.permissions import (CloudStoragePermission,
     CommentPermission, IssuePermission, JobPermission, ProjectPermission,
     TaskPermission, UserPermission)
+
+
+def create_transaction(user: User, amount: int, description: str = "") -> Union[Transaction, None]:
+    db_user_assets = UserAssets.objects.filter(user=user).first()
+    if db_user_assets is None:
+        db_user_assets = UserAssets.objects.create(user=user).first()
+    if amount == 0:
+        return None
+    elif amount > 0 or db_user_assets.fund + amount >= 0:
+        db_user_assets.fund += amount
+        transaction = Transaction.objects.create(user=user, amount=amount, description=description)
+        db_user_assets.save()
+        transaction.save()
+        return transaction
+    else:
+        return None
+
 
 @extend_schema(tags=['server'])
 class ServerViewSet(viewsets.ViewSet):
@@ -995,31 +1012,29 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
 
         if db_user_assets is None:
             UserAssets.objects.create(user=purchaser)
-            return Response("You don't have enough fund", status=status.HTTP_406_NOT_ACCEPTABLE)
-
-        user_assets: UserAssets = db_user_assets
+            return Response("You don't have enough fund")
 
         db_task: models.Task = self.get_object()
         db_data: models.Data = db_task.data
 
         if db_task.status != StatusChoice.COMPLETED:
-            return Response("This task is still in progress", status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response("This task is still in progress")
 
-        if UserAssets.objects.filter(datasets=db_task).count() > 0:
-            return Response("You have already purchased this dataset", status=status.HTTP_304_NOT_MODIFIED)
+        if db_user_assets.datasets.filter(datasets=db_task).count() > 0:
+            return Response("You have already purchased this dataset")
 
         num_frames = db_data.stop_frame - db_data.start_frame
-        cost = int(num_frames / 10)
 
-        owned_fund = int(user_assets.fund)
+        transaction = create_transaction(
+            user=purchaser,
+            amount=-int(num_frames / 10),
+            description=f"Purchase task #{db_task.id}"
+        )
 
-        if owned_fund < cost:
-            user_assets.fund = owned_fund - cost
-            user_assets.datasets.add(db_task)
-            user_assets.save()
-            return Response(status=status.HTTP_200_OK)
+        if transaction is None:
+            return Response("You don't have enough fund")
         else:
-            return Response("You don't have enough fund", status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(data={'success': True}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['GET'], url_path='contributors')
     def contributors(self, request, pk):
@@ -1292,10 +1307,11 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
             def reviewer_award(job: Job, acceptance: bool):
                 db_reviews = list(ReviewRecord.objects.filter(job=job).filter(result=acceptance).all())
                 for review in db_reviews:
-                    db_user_asset = UserAssets.objects.filter(user=review.reviewer).first()
-                    db_user_asset.fund += 5
-                    # TODO! add transaction
-                    db_user_asset.save()
+                    create_transaction(
+                        user=review.reviewer,
+                        amount=10,
+                        description=f"Review award for job #{job.id}"
+                    )
 
                 ReviewRecord.objects.filter(job=job).delete()
 
@@ -1311,12 +1327,11 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
                     for segment in db_segments:
                         job: Union[Job, None] = Job.objects.filter(segment=segment).first()
                         if job is not None:
-                            db_user_assets = UserAssets.objects.filter(user=job.assignee).first()
-                            if db_user_assets is not None:
-                                db_user_assets = UserAssets.objects.create(user=job.assignee)
-                            assert (db_user_assets is not None)
-                            db_user_assets.fund += int(segment.stop_frame - segment.start_frame)
-                            db_user_assets.save()
+                            create_transaction(
+                                user=job.assignee,
+                                amount=int(segment.stop_frame - segment.start_frame),
+                                description=f"Contribution award for job #{job.id}"
+                            )
 
             def complete_job(job: Job):
                 job.stage = StageChoice.ACCEPTANCE
@@ -1599,6 +1614,13 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
         if db_user_assets is None:
             db_user_assets = UserAssets.objects.create(user=request.user, fund=0)
         return Response(int(db_user_assets.fund))
+
+    @action(detail=False, methods=['GET'], url_path='transactions')
+    def transactions(self, request):
+        rq_user = request.user
+        transactions_query = Transaction.objects.filter(user=rq_user)
+        serializer = TransactionSerializer(transactions_query, many=True)
+        return Response(serializer.data)
 
 
 @extend_schema(tags=['cloud storages'])
