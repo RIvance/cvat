@@ -76,10 +76,15 @@ from cvat.apps.iam.permissions import (CloudStoragePermission,
     TaskPermission, UserPermission)
 
 
-def create_transaction(user: User, amount: int, description: str = "") -> Union[Transaction, None]:
+def get_user_assets(user: User):
     db_user_assets = UserAssets.objects.filter(user=user).first()
     if db_user_assets is None:
-        db_user_assets = UserAssets.objects.create(user=user).first()
+        db_user_assets = UserAssets.objects.create(user=user, fund=0)
+    return db_user_assets
+
+
+def create_transaction(user: User, amount: int, description: str = "") -> Union[Transaction, None]:
+    db_user_assets = get_user_assets(user)
     if amount == 0:
         return None
     elif amount > 0 or db_user_assets.fund + amount >= 0:
@@ -658,9 +663,7 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
             db_project.save()
             assert instance.organization == db_project.organization
 
-        db_user_assets = UserAssets.objects.filter(user=self.request.user).first()
-        if db_user_assets is None:
-            db_user_assets = UserAssets.objects.create(user=self.request.user, fund=0)
+        db_user_assets = get_user_assets(self.request.user)
         db_user_assets.datasets.add(instance)
         db_user_assets.save()
 
@@ -847,13 +850,11 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['GET', 'DELETE', 'PUT', 'PATCH', 'POST', 'OPTIONS'], url_path=r'annotations/?$',
         serializer_class=LabeledDataSerializer)
     def annotations(self, request, pk):
-        self._object = self.get_object() # force to call check_object_permissions
+        self._object: Task = self.get_object()  # force to call check_object_permissions
         if request.method == 'GET':
 
-            db_user_assets = UserAssets.objects.filter(user=request.user).first()
-            user_owned_datasets: List[Task] = list(db_user_assets.datasets)
-            if self._object not in user_owned_datasets:
-                return Response("You do not own this dataset", status=status.HTTP_403_FORBIDDEN)
+            if not self._object.userassets_set.filter(user=request.user).exists():
+                return Response("You do not own this dataset")
 
             format_name = request.query_params.get('format')
             if format_name:
@@ -1008,12 +1009,7 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
     @action(methods=['PUT'], url_path='purchase', detail=True)
     def purchase(self, request, pk):
 
-        purchaser = self.request.user
-        db_user_assets: Union[UserAssets, None] = UserAssets.objects.filter(user=purchaser).first()
-
-        if db_user_assets is None:
-            UserAssets.objects.create(user=purchaser)
-            return Response("You don't have enough fund")
+        purchaser: User = request.user
 
         db_task: models.Task = self.get_object()
         db_data: models.Data = db_task.data
@@ -1021,14 +1017,12 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
         if db_task.status != StatusChoice.COMPLETED:
             return Response("This task is still in progress")
 
-        if db_user_assets.datasets.filter(datasets=db_task).count() > 0:
+        if db_task.userassets_set.filter(user=purchaser).exists():
             return Response("You have already purchased this dataset")
-
-        num_frames = db_data.stop_frame - db_data.start_frame
 
         transaction = create_transaction(
             user=purchaser,
-            amount=-int(num_frames / 10),
+            amount=-int(db_data.size / 10),
             description=f"Purchase task #{db_task.id}"
         )
 
@@ -1036,6 +1030,15 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
             return Response("You don't have enough fund")
         else:
             return Response(data={'success': True}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['GET'], url_path='purchasedlist')
+    def purchasedlist(self, request):
+
+        # TODO! temp solution
+        rq_user = request.user
+        db_user_assets = get_user_assets(rq_user)
+        ids = db_user_assets.datasets.values_list('data_id', flat=True)
+        return Response(data=ids)
 
     @action(detail=True, methods=['GET'], url_path='contributors')
     def contributors(self, request, pk):
@@ -1388,7 +1391,7 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
             if db_job.assignee == rq_user:
                 return Response("The job cannot be reviewed by the annotator")
 
-            if ReviewRecord.objects.filter(job=db_job).filter(reviewer=rq_user).count() > 0:
+            if db_job.reviewrecord_set.filter(reviewer=rq_user).exists():
                 return Response("You have already reviewed this job")
 
             return Response(data={"success": True})
@@ -1613,9 +1616,7 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
 
     @action(detail=False, methods=['GET'], url_path='fund')
     def fund(self, request):
-        db_user_assets = UserAssets.objects.filter(user=request.user).first()
-        if db_user_assets is None:
-            db_user_assets = UserAssets.objects.create(user=request.user, fund=0)
+        db_user_assets = get_user_assets(request.user)
         return Response(int(db_user_assets.fund))
 
     @action(detail=False, methods=['GET'], url_path='transactions')

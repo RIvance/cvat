@@ -7,6 +7,7 @@ import { ThunkAction } from 'redux-thunk';
 import { CombinedState, Indexable, TasksQuery } from 'reducers/interfaces';
 import { getCVATStore } from 'cvat-store';
 import getCore from 'cvat-core-wrapper';
+import { string } from 'prop-types';
 import { getInferenceStatusAsync } from './models-actions';
 
 const cvat = getCore();
@@ -42,6 +43,12 @@ export enum TasksActionTypes {
     IMPORT_TASK_SUCCESS = 'IMPORT_TASK_SUCCESS',
     IMPORT_TASK_FAILED = 'IMPORT_TASK_FAILED',
     SWITCH_MOVE_TASK_MODAL_VISIBLE = 'SWITCH_MOVE_TASK_MODAL_VISIBLE',
+    PURCHASE_DATASET = 'PURCHASE_DATASET',
+    PURCHASE_DATASET_SUCCESS = 'PURCHASE_DATASET_SUCCESS',
+    PURCHASE_DATASET_FAILED = 'PURCHASE_DATASET_FAILED',
+    GET_PURCHASED_LIST = 'GET_PURCHASED_LIST',
+    GET_PURCHASED_LIST_SUCCESS = 'GET_PURCHASED_LIST_SUCCESS',
+    GET_PURCHASED_LIST_FAILED = 'GET_PURCHASED_LIST_FAILED',
 }
 
 function getTasks(query: TasksQuery, updateQuery: boolean): AnyAction {
@@ -605,6 +612,84 @@ export function moveTaskToProjectAsync(
             dispatch(updateTaskSuccess(task, task.id));
         } catch (error) {
             dispatch(updateTaskFailed(error, taskInstance));
+        }
+    };
+}
+
+function purchaseDataset(): AnyAction {
+    return {
+        type: TasksActionTypes.PURCHASE_DATASET,
+    };
+}
+
+function purchaseDatasetSuccess(taskID: number): AnyAction {
+    return {
+        type: TasksActionTypes.PURCHASE_DATASET_SUCCESS,
+        payload: { taskID },
+    };
+}
+
+function purchaseDatasetFailed(error: any): AnyAction {
+    return {
+        type: TasksActionTypes.PURCHASE_DATASET_FAILED,
+        payload: { error },
+    };
+}
+
+export function purchaseDatasetAsync(taskID: number) : ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            dispatch(purchaseDataset());
+            const result = await cvat.server.request(`${cvat.config.backendAPI}/tasks/${taskID}/purchase`, {
+                method: 'PUT',
+            });
+            if (result.success || (result.data && result.data.success)) {
+                dispatch(purchaseDatasetSuccess(taskID));
+            } else if (result.data && result.data instanceof string) {
+                dispatch(purchaseDatasetFailed(result.data));
+            } else {
+                dispatch(purchaseDatasetFailed(result));
+            }
+        } catch (error) {
+            dispatch(purchaseDatasetFailed(error));
+        }
+    };
+}
+
+function getPurchasedList(): AnyAction {
+    return {
+        type: TasksActionTypes.GET_PURCHASED_LIST,
+    };
+}
+
+function getPurchasedListSuccess(purchasedList: number[]): AnyAction {
+    return {
+        type: TasksActionTypes.GET_PURCHASED_LIST_SUCCESS,
+        payload: { purchasedList },
+    };
+}
+
+function getPurchasedListFailed(error: any): AnyAction {
+    return {
+        type: TasksActionTypes.GET_PURCHASED_LIST_FAILED,
+        payload: { error },
+    };
+}
+
+export function getPurchasedListAsync() : ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            dispatch(getPurchasedList());
+            const result = await cvat.server.request(`${cvat.config.backendAPI}/tasks/purchasedlist`, {
+                method: 'GET',
+            });
+            if (result.length > 0 && typeof result[0] === 'number') {
+                dispatch(getPurchasedListSuccess(result));
+            } else {
+                dispatch(getPurchasedListSuccess([]));
+            }
+        } catch (error) {
+            dispatch(getPurchasedListFailed(error));
         }
     };
 }

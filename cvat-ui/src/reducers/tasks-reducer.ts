@@ -41,6 +41,7 @@ const defaultState: TasksState = {
         backups: {},
     },
     importing: false,
+    purchasedList: [],
 };
 
 export default (state: TasksState = defaultState, action: AnyAction): TasksState => {
@@ -351,12 +352,28 @@ export default (state: TasksState = defaultState, action: AnyAction): TasksState
                 },
             };
         }
+
         case TasksActionTypes.CLAIM_JOB_SUCCESS: {
             return {
                 ...state,
                 lastClaimJobID: action.payload.jobID,
             };
         }
+
+        case TasksActionTypes.PURCHASE_DATASET_SUCCESS: {
+            return {
+                ...state,
+                purchasedList: state.purchasedList.concat(action.payload.taskID),
+            };
+        }
+
+        case TasksActionTypes.GET_PURCHASED_LIST_SUCCESS: {
+            return {
+                ...state,
+                purchasedList: action.payload.purchasedList,
+            };
+        }
+
         case BoundariesActionTypes.RESET_AFTER_ERROR:
         case AuthActionTypes.LOGOUT_SUCCESS: {
             return { ...defaultState };

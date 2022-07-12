@@ -661,6 +661,7 @@ class TaskPermission(OpenPolicyAgentPermission):
             ('export_backup', 'GET'): 'export:backup',
             ('purchase', 'PUT'): 'view',
             ('contributors', 'GET'): 'view',
+            ('purchasedlist', 'GET'): 'view',
         }.get((view.action, request.method))
 
         scopes = []

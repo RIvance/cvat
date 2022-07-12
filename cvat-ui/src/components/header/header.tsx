@@ -295,17 +295,29 @@ function HeaderContainer(props: Props): JSX.Element {
         <Layout.Header className='cvat-header'>
             <div className='cvat-left-header'>
                 <Icon className='cvat-logo-icon' component={CVATLogo} />
+                {/* <Button */}
+                {/*    className={getButtonClassName('projects')} */}
+                {/*    type='link' */}
+                {/*    value='projects' */}
+                {/*    href='/projects?page=1' */}
+                {/*    onClick={(event: React.MouseEvent): void => { */}
+                {/*        event.preventDefault(); */}
+                {/*        history.push('/projects'); */}
+                {/*    }} */}
+                {/* > */}
+                {/*    Projects */}
+                {/* </Button> */}
                 <Button
-                    className={getButtonClassName('projects')}
+                    className={getButtonClassName('datasets')}
                     type='link'
-                    value='projects'
-                    href='/projects?page=1'
+                    value='datasets'
+                    href='/datasets?page=1'
                     onClick={(event: React.MouseEvent): void => {
                         event.preventDefault();
-                        history.push('/projects');
+                        history.push('/datasets');
                     }}
                 >
-                    Projects
+                    Datasets
                 </Button>
                 <Button
                     className={getButtonClassName('tasks')}

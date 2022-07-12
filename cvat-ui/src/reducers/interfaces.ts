@@ -123,6 +123,7 @@ export interface TasksState {
             [tid: number]: boolean;
         };
     };
+    purchasedList: number[];
 }
 
 export interface ExportState {
