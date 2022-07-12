@@ -6,9 +6,9 @@ import getCore from 'cvat-core-wrapper';
 import { ThunkAction } from 'redux-thunk';
 
 export enum UserAssetsActions {
-    GET_OWNED_POINTS = 'GET_OWNED_POINTS',
-    GET_OWNED_POINTS_SUCCESS = 'GET_OWNED_POINTS_SUCCESS',
-    GET_OWNED_POINTS_FAILED = 'GET_OWNED_POINTS_FAILED',
+    GET_FUND = 'GET_FUND',
+    GET_FUND_SUCCESS = 'GET_FUND_SUCCESS',
+    GET_FUND_FAILED = 'GET_FUND_FAILED',
     PURCHASE_DATASET = 'PURCHASE_DATASET', // reserved
     PURCHASE_DATASET_SUCCESS = 'PURCHASE_DATASET_SUCCESS', // reserved
     PURCHASE_DATASET_FAILED = 'PURCHASE_DATASET_FAILED', // reserved
@@ -16,37 +16,37 @@ export enum UserAssetsActions {
 
 const cvat = getCore();
 
-export function getOwnedPoints(): AnyAction {
+export function getFund(): AnyAction {
     return {
-        type: UserAssetsActions.GET_OWNED_POINTS,
+        type: UserAssetsActions.GET_FUND,
         payload: { },
     };
 }
 
-export function getOwnedPointsSuccess(ownedPoints: number): AnyAction {
+export function getFundSuccess(fund: number): AnyAction {
     return {
-        type: UserAssetsActions.GET_OWNED_POINTS_SUCCESS,
-        payload: { ownedPoints },
+        type: UserAssetsActions.GET_FUND_SUCCESS,
+        payload: { fund },
     };
 }
 
-export function getOwnedPointsFailed(error: any): AnyAction {
+export function getFundFailed(error: any): AnyAction {
     return {
-        type: UserAssetsActions.GET_OWNED_POINTS_FAILED,
+        type: UserAssetsActions.GET_FUND_FAILED,
         payload: { error },
     };
 }
 
-export function getOwnedPointsAsync(): ThunkAction<Promise<void>, {}, {}, AnyAction> {
+export function getFundAsync(): ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
-        dispatch(getOwnedPoints());
+        dispatch(getFund());
         let result = null;
         try {
-            result = await cvat.users.getOwnedPoints();
+            result = await cvat.users.getFund();
         } catch (error) {
-            dispatch(getOwnedPointsFailed(error));
+            dispatch(getFundFailed(error));
             return;
         }
-        dispatch(getOwnedPointsSuccess(result));
+        dispatch(getFundSuccess(result));
     };
 }

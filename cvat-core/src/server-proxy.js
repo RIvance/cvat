@@ -1179,12 +1179,12 @@
                 return response.data;
             }
 
-            async function getOwnedPoints() {
+            async function getFund() {
                 const { backendAPI } = config;
 
                 let response = null;
                 try {
-                    const url = `${backendAPI}/users/points`;
+                    const url = `${backendAPI}/users/fund`;
                     response = await Axios.get(url, {
                         proxy: config.proxy,
                         responseType: 'text',
@@ -1963,7 +1963,7 @@
                             get: getUsers,
                             self: getSelf,
                             // TODO! temp solution, should move to UserAssets interface in the future
-                            ownedPoints: getOwnedPoints,
+                            fund: getFund,
                         }),
                         writable: false,
                     },

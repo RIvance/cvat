@@ -709,7 +709,7 @@ class CloudStorage(models.Model):
 class UserAssets(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    points = models.IntegerField(default=0)
+    fund = models.IntegerField(default=0)
     datasets = models.ManyToManyField(Task, default=None)
 
     class Meta:
@@ -726,3 +726,10 @@ class ReviewRecord(models.Model):
 
     class Meta:
         default_permissions = ()
+
+
+class Transaction(models.Model):
+
+    amount = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    datetime = models.DateTimeField()

@@ -37,7 +37,7 @@ import CVATTooltip from 'components/common/cvat-tooltip';
 import { switchSettingsDialog as switchSettingsDialogAction } from 'actions/settings-actions';
 import { logoutAsync, authActions } from 'actions/auth-actions';
 import { CombinedState } from 'reducers/interfaces';
-import { getOwnedPointsAsync } from 'actions/user-assets-actions';
+import { getFundAsync } from 'actions/user-assets-actions';
 import SettingsModal from './settings-modal/settings-modal';
 
 const core = getCore();
@@ -63,7 +63,7 @@ interface Tool {
 interface StateToProps {
     user: any;
     tool: Tool;
-    ownedPoints: number;
+    fund: number;
     switchSettingsShortcut: string;
     settingsDialogShown: boolean;
     changePasswordDialogShown: boolean;
@@ -93,7 +93,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
             showChangePasswordDialog: changePasswordDialogShown,
             allowChangePassword: renderChangePasswordItem,
         },
-        userAssets: { ownedPoints },
+        userAssets: { fund },
         plugins: { list },
         about: { server, packageVersion },
         shortcuts: { normalizedKeyMap },
@@ -120,7 +120,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 version: packageVersion.ui,
             },
         },
-        ownedPoints,
+        fund,
         switchSettingsShortcut: normalizedKeyMap.SWITCH_SETTINGS,
         settingsDialogShown,
         changePasswordDialogShown,
@@ -150,7 +150,7 @@ function HeaderContainer(props: Props): JSX.Element {
     const {
         user,
         tool,
-        ownedPoints,
+        fund,
         logoutFetching,
         changePasswordFetching,
         settingsDialogShown,
@@ -173,7 +173,7 @@ function HeaderContainer(props: Props): JSX.Element {
     const location = useLocation();
 
     useEffect(() => {
-        dispatch(getOwnedPointsAsync());
+        dispatch(getFundAsync());
     }, []);
 
     function showAboutModal(): void {
@@ -249,7 +249,7 @@ function HeaderContainer(props: Props): JSX.Element {
             <Menu.Item
                 icon={<DollarCircleOutlined />}
             >
-                {`Points: ${ownedPoints}`}
+                {`Fund: ${fund}`}
             </Menu.Item>
             <Menu.Item
                 icon={<SettingOutlined />}

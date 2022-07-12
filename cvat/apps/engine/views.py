@@ -642,7 +642,7 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
 
         db_user_assets = UserAssets.objects.filter(user=self.request.user).first()
         if db_user_assets is None:
-            db_user_assets = UserAssets.objects.create(user=self.request.user, points=0)
+            db_user_assets = UserAssets.objects.create(user=self.request.user, fund=0)
         db_user_assets.datasets.add(instance)
         db_user_assets.save()
 
@@ -995,7 +995,7 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
 
         if db_user_assets is None:
             UserAssets.objects.create(user=purchaser)
-            return Response("You don't have enough points", status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response("You don't have enough fund", status=status.HTTP_406_NOT_ACCEPTABLE)
 
         user_assets: UserAssets = db_user_assets
 
@@ -1011,15 +1011,15 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
         num_frames = db_data.stop_frame - db_data.start_frame
         cost = int(num_frames / 10)
 
-        owned_points = int(user_assets.points)
+        owned_fund = int(user_assets.fund)
 
-        if owned_points < cost:
-            user_assets.points = owned_points - cost
+        if owned_fund < cost:
+            user_assets.fund = owned_fund - cost
             user_assets.datasets.add(db_task)
             user_assets.save()
             return Response(status=status.HTTP_200_OK)
         else:
-            return Response("You don't have enough points", status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response("You don't have enough fund", status=status.HTTP_406_NOT_ACCEPTABLE)
 
     @action(detail=True, methods=['GET'], url_path='contributors')
     def contributors(self, request, pk):
@@ -1289,29 +1289,43 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
 
         if request.method == 'POST':
 
+            def reviewer_award(job: Job, acceptance: bool):
+                db_reviews = list(ReviewRecord.objects.filter(job=job).filter(result=acceptance).all())
+                for review in db_reviews:
+                    db_user_asset = UserAssets.objects.filter(user=review.reviewer).first()
+                    db_user_asset.fund += 5
+                    # TODO! add transaction
+                    db_user_asset.save()
+
+                ReviewRecord.objects.filter(job=job).delete()
+
+            def check_task_complete(task_: Task):
+
+                db_segments: List[Segment] = list(Segment.objects.filter(task=task_).all())
+                db_job_query = Job.objects.filter(segment__in=db_segments) \
+                    .filter(stage=StageChoice.ACCEPTANCE)
+
+                if db_job_query.count() == len(db_segments):
+                    task.status = StatusChoice.COMPLETED
+                    # db_jobs: List[Job] = list(Job.objects.filter(segment__in=db_segments).all())
+                    for segment in db_segments:
+                        job: Union[Job, None] = Job.objects.filter(segment=segment).first()
+                        if job is not None:
+                            db_user_assets = UserAssets.objects.filter(user=job.assignee).first()
+                            if db_user_assets is not None:
+                                db_user_assets = UserAssets.objects.create(user=job.assignee)
+                            assert (db_user_assets is not None)
+                            db_user_assets.fund += int(segment.stop_frame - segment.start_frame)
+                            db_user_assets.save()
+
             def complete_job(job: Job):
                 job.stage = StageChoice.ACCEPTANCE
                 job.status = StatusChoice.COMPLETED
                 job.state = StateChoice.COMPLETED
                 job.save()
-
+                reviewer_award(job, True)
                 db_task: Task = job.segment.task
-                db_segments: List[Segment] = list(Segment.objects.filter(task=db_task).all())
-                db_job_query = Job.objects.filter(segment__in=db_segments) \
-                    .filter(stage=StageChoice.ACCEPTANCE)
-
-                if db_job_query.count() == len(db_segments):
-                    db_task.status = StatusChoice.COMPLETED
-                    # db_jobs: List[Job] = list(Job.objects.filter(segment__in=db_segments).all())
-                    for segment in db_segments:
-                        db_job: Union[Job, None] = Job.objects.filter(segment=segment).first()
-                        if db_job is not None:
-                            db_user_assets: Union[UserAssets, None] = UserAssets.objects.filter(user=job.assignee).first()
-                            if db_user_assets is not None:
-                                db_user_assets = UserAssets.objects.create(user=job.assignee)
-                            assert(db_user_assets is not None)
-                            db_user_assets.points += segment.stop_frame - segment.start_frame
-                            db_user_assets.save()
+                check_task_complete(db_task)
 
             def reject_job(job: Job):
                 job.assignee = None
@@ -1319,6 +1333,7 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
                 job.status = StatusChoice.ANNOTATION
                 job.state = StateChoice.REJECTED
                 job.save()
+                reviewer_award(job, False)
 
             db_job: Job = self.get_object()
             rq_user = self.request.user
@@ -1333,8 +1348,13 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
             if len(reviews) == 2:
                 if all(review_results):
                     complete_job(db_job)
-            elif len(reviews) == 3:
+            elif len(reviews) >= 3:
                 if review_results.count(True) >= 2:
+                    complete_job(db_job)
+                else:
+                    reject_job(db_job)
+            elif len(reviews) > 3:
+                if review_results.count(True) > len(reviews) * 0.7:
                     complete_job(db_job)
                 else:
                     reject_job(db_job)
@@ -1573,12 +1593,12 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
         serializer = serializer_class(request.user, context={ "request": request })
         return Response(serializer.data)
 
-    @action(detail=False, methods=['GET'], url_path='points')
-    def points(self, request):
+    @action(detail=False, methods=['GET'], url_path='fund')
+    def fund(self, request):
         db_user_assets = UserAssets.objects.filter(user=request.user).first()
         if db_user_assets is None:
-            db_user_assets = UserAssets.objects.create(user=request.user, points=0)
-        return Response(int(db_user_assets.points))
+            db_user_assets = UserAssets.objects.create(user=request.user, fund=0)
+        return Response(int(db_user_assets.fund))
 
 
 @extend_schema(tags=['cloud storages'])

@@ -6,16 +6,16 @@ import { UserAssetsState } from './interfaces';
 import { UserAssetsActions } from '../actions/user-assets-actions';
 
 const defaultState: UserAssetsState = {
-    ownedPoints: 0,
+    fund: 0,
     datasets: [],
 };
 
 export default (state: UserAssetsState = defaultState, action: AnyAction): UserAssetsState => {
     switch (action.type) {
-        case UserAssetsActions.GET_OWNED_POINTS_SUCCESS: {
+        case UserAssetsActions.GET_FUND_SUCCESS: {
             return {
                 ...state,
-                ownedPoints: action.payload.ownedPoints,
+                fund: action.payload.fund,
             };
         }
         default: {

@@ -37,7 +37,7 @@ export interface Project {
 }
 
 export interface UserAssetsState {
-    ownedPoints: number;
+    fund: number;
     datasets: number[];
 }
 

@@ -446,8 +446,8 @@ function build() {
             },
 
             // temp solution, this function should be implemented in `userAssets` api
-            async getOwnedPoints() {
-                const result = await PluginRegistry.apiWrapper(cvat.users.getOwnedPoints);
+            async getFund() {
+                const result = await PluginRegistry.apiWrapper(cvat.users.getFund);
                 return result;
             },
         },
