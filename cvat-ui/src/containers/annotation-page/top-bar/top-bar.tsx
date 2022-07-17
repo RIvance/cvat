@@ -78,9 +78,9 @@ interface DispatchToProps {
     onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
     onSwitchPlay(playing: boolean): void;
     onSaveAnnotation(sessionInstance: any): void;
-    onSubmitJob(jobInstance: any): void;
-    onReviewAccept(jobID: number): void;
-    onReviewReject(jobID: number): void;
+    onSubmitJob(jobInstance: any, after: () => void): void;
+    onReviewAccept(jobID: number, after: () => void): void;
+    onReviewReject(jobID: number, after: () => void): void;
     showStatistics(sessionInstance: any): void;
     showFilters(sessionInstance: any): void;
     undo(sessionInstance: any, frameNumber: any): void;
@@ -160,14 +160,14 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onSaveAnnotation(sessionInstance: any): void {
             dispatch(saveAnnotationsAsync(sessionInstance));
         },
-        onSubmitJob(jobInstance: any) {
-            dispatch(submitJobAsync(jobInstance));
+        onSubmitJob(jobInstance: any, after: () => void) {
+            dispatch(submitJobAsync(jobInstance, after));
         },
-        onReviewAccept(jobID: number) {
-            dispatch(submitJobReviewAsync(jobID, true));
+        onReviewAccept(jobID: number, after: () => void) {
+            dispatch(submitJobReviewAsync(jobID, true, after));
         },
-        onReviewReject(jobID: number) {
-            dispatch(submitJobReviewAsync(jobID, false));
+        onReviewReject(jobID: number, after: () => void) {
+            dispatch(submitJobReviewAsync(jobID, false, after));
         },
         showStatistics(sessionInstance: any): void {
             dispatch(collectStatisticsAsync(sessionInstance));
@@ -432,19 +432,19 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         onSaveAnnotation(jobInstance);
     };
 
-    private onFinishJob = (): void => {
+    private onFinishJob = (after: () => void): void => {
         const { onSubmitJob, jobInstance } = this.props;
-        onSubmitJob(jobInstance);
+        onSubmitJob(jobInstance, after);
     };
 
-    private onReviewAccept = (): void => {
+    private onReviewAccept = (after: () => void): void => {
         const { onReviewAccept, jobInstance } = this.props;
-        onReviewAccept(jobInstance.id);
+        onReviewAccept(jobInstance.id, after);
     };
 
-    private onReviewReject = (): void => {
+    private onReviewReject = (after: () => void): void => {
         const { onReviewReject, jobInstance } = this.props;
-        onReviewReject(jobInstance.id);
+        onReviewReject(jobInstance.id, after);
     };
 
     private onChangePlayerSliderValue = (value: number): void => {

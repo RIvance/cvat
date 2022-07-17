@@ -343,20 +343,21 @@ function HeaderContainer(props: Props): JSX.Element {
                 >
                     Jobs
                 </Button>
-                <Button
-                    className={getButtonClassName('cloudstorages')}
-                    type='link'
-                    value='cloudstorages'
-                    href='/cloudstorages?page=1'
-                    onClick={(event: React.MouseEvent): void => {
-                        event.preventDefault();
-                        history.push('/cloudstorages');
-                    }}
-                >
-                    Cloud Storages
-                </Button>
+                {/* <Button */}
+                {/*    className={getButtonClassName('cloudstorages')} */}
+                {/*    type='link' */}
+                {/*    value='cloudstorages' */}
+                {/*    href='/cloudstorages?page=1' */}
+                {/*    onClick={(event: React.MouseEvent): void => { */}
+                {/*        event.preventDefault(); */}
+                {/*        history.push('/cloudstorages'); */}
+                {/*    }} */}
+                {/* > */}
+                {/*    Cloud Storages */}
+                {/* </Button> */}
                 {isModelsPluginActive ? (
                     <Button
+                        disabled
                         className={getButtonClassName('models')}
                         type='link'
                         value='models'

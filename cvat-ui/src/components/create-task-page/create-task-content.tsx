@@ -18,7 +18,7 @@ import ConnectedFileManager from 'containers/file-manager/file-manager';
 import LabelsEditor from 'components/labels-editor/labels-editor';
 import { Files } from 'components/file-manager/file-manager';
 import BasicConfigurationForm, { BaseConfiguration } from './basic-configuration-form';
-import ProjectSearchField from './project-search-field';
+// import ProjectSearchField from './project-search-field';
 import ProjectSubsetField from './project-subset-field';
 import AdvancedConfigurationForm, { AdvancedConfiguration, SortingMethod } from './advanced-configuration-form';
 
@@ -152,7 +152,10 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
 
     private handleSubmitAdvancedConfiguration = (values: AdvancedConfiguration): void => {
         this.setState({
-            advanced: { ...values },
+            advanced: {
+                ...values,
+                segmentSize: values.segmentSize === undefined ? 200 : values.segmentSize,
+            },
         });
     };
 
@@ -227,20 +230,20 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
         );
     }
 
-    private renderProjectBlock(): JSX.Element {
-        const { projectId } = this.state;
-
-        return (
-            <>
-                <Col span={24}>
-                    <Text className='cvat-text-color'>Project</Text>
-                </Col>
-                <Col span={24}>
-                    <ProjectSearchField onSelect={this.handleProjectIdChange} value={projectId} />
-                </Col>
-            </>
-        );
-    }
+    // private renderProjectBlock(): JSX.Element {
+    //     const { projectId } = this.state;
+    //
+    //     return (
+    //         <>
+    //             <Col span={24}>
+    //                 <Text className='cvat-text-color'>Project</Text>
+    //             </Col>
+    //             <Col span={24}>
+    //                 <ProjectSearchField onSelect={this.handleProjectIdChange} value={projectId} />
+    //             </Col>
+    //         </>
+    //     );
+    // }
 
     private renderSubsetBlock(): JSX.Element | null {
         const { projectId, subset } = this.state;
@@ -344,7 +347,7 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
                 </Col>
 
                 {this.renderBasicBlock()}
-                {this.renderProjectBlock()}
+                {/* {this.renderProjectBlock()} */}
                 {this.renderSubsetBlock()}
                 {this.renderLabelsBlock()}
                 {this.renderFilesBlock()}

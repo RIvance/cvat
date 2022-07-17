@@ -14,6 +14,7 @@ import Menu from 'antd/lib/menu';
 import { MenuInfo } from 'rc-menu/lib/interface';
 
 import { useCardHeightHOC } from 'utils/hooks';
+import { Button } from 'antd';
 
 const useCardHeight = useCardHeightHOC({
     containerClassName: 'cvat-jobs-page',
@@ -72,11 +73,25 @@ function JobCardComponent(props: Props): JSX.Element {
             )}
         >
             <Descriptions column={1} size='small'>
-                <Descriptions.Item label='Stage'>{job.stage}</Descriptions.Item>
-                <Descriptions.Item label='State'>{job.state}</Descriptions.Item>
+                {/* <Descriptions.Item label='Stage'>{job.stage}</Descriptions.Item> */}
+                {/* <Descriptions.Item label='State'>{job.state}</Descriptions.Item> */}
+
+                <Descriptions.Item label='Task'>
+                    <Button
+                        onClick={() => history.push(`tasks/${job.taskId}`)}
+                        type='link'
+                        size='small'
+                    >
+#
+                        {job.taskId}
+                    </Button>
+                </Descriptions.Item>
+                <Descriptions.Item label='Frames'>{job.stopFrame - job.startFrame + 1}</Descriptions.Item>
+
                 { expanded ? (
-                    <Descriptions.Item label='Size'>{job.stopFrame - job.startFrame + 1}</Descriptions.Item>
+                    <Descriptions.Item label='Award'>{Math.floor((job.stopFrame - job.startFrame + 1) / 2)}</Descriptions.Item>
                 ) : null}
+
                 { expanded && job.assignee ? (
                     <Descriptions.Item label='Assignee'>{job.assignee.username}</Descriptions.Item>
                 ) : null}
@@ -95,7 +110,7 @@ function JobCardComponent(props: Props): JSX.Element {
                 }}
                 >
                     <Menu.Item key='task' disabled={job.taskId === null}>Go to the task</Menu.Item>
-                    <Menu.Item key='project' disabled={job.projectId === null}>Go to the project</Menu.Item>
+                    {/* <Menu.Item key='project' disabled={job.projectId === null}>Go to the project</Menu.Item> */}
                     <Menu.Item key='bug_tracker' disabled={!job.bugTracker}>Go to the bug tracker</Menu.Item>
                 </Menu>
             )}

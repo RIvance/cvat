@@ -1029,6 +1029,9 @@ class TaskViewSet(UploadMixin, viewsets.ModelViewSet):
         if transaction is None:
             return Response("You don't have enough fund")
         else:
+            db_user_assets = get_user_assets(purchaser)
+            db_user_assets.datasets.add(db_task)
+            db_user_assets.save()
             return Response(data={'success': True}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['GET'], url_path='purchasedlist')
@@ -1101,6 +1104,10 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
         queryset = super().get_queryset()
 
         if self.action == 'list':
+
+            # TODO! replace with filter in the future
+            queryset = queryset.filter(stage=StageChoice.ANNOTATION)
+
             perm = JobPermission.create_scope_list(self.request)
             queryset = perm.filter(queryset)
 
@@ -1326,16 +1333,28 @@ class JobViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
                     .filter(stage=StageChoice.ACCEPTANCE)
 
                 if db_job_query.count() == len(db_segments):
-                    task.status = StatusChoice.COMPLETED
+                    task_.status = StatusChoice.COMPLETED
                     # db_jobs: List[Job] = list(Job.objects.filter(segment__in=db_segments).all())
                     for segment in db_segments:
                         job: Union[Job, None] = Job.objects.filter(segment=segment).first()
                         if job is not None:
+                            contributor_award = int((segment.stop_frame - segment.start_frame + 1) / 2)
                             create_transaction(
                                 user=job.assignee,
-                                amount=int(segment.stop_frame - segment.start_frame),
+                                amount=contributor_award,
                                 description=f"Contribution award for job #{job.id}"
                             )
+                            db_contributor_user_assets = get_user_assets(job.assignee)
+                            db_contributor_user_assets.datasets.add(task_)
+                            db_contributor_user_assets.save()
+
+                    uploader_award = int(task_.data.size / 10)
+                    create_transaction(
+                        user=task_.owner,
+                        amount=uploader_award,
+                        description=f"Upload award for task #{task_.data.id}"
+                    )
+
 
             def complete_job(job: Job):
                 job.stage = StageChoice.ACCEPTANCE

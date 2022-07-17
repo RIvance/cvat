@@ -12,6 +12,7 @@ import {
     localStorageRecentKeyword, localStorageRecentCapacity, predefinedFilterValues, config,
 } from './jobs-filter-configuration';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const FilteringComponent = ResourceFilterHOC(
     config, localStorageRecentKeyword, localStorageRecentCapacity, predefinedFilterValues,
 );
@@ -25,7 +26,7 @@ interface Props {
 
 function TopBarComponent(props: Props): JSX.Element {
     const {
-        query, onApplyFilter, onApplySorting, onApplySearch,
+        query, onApplySorting, onApplySearch,
     } = props;
     const [visibility, setVisibility] = useState(defaultVisibility);
 
@@ -49,25 +50,25 @@ function TopBarComponent(props: Props): JSX.Element {
                                 setVisibility({ ...defaultVisibility, sorting: visible })
                             )}
                             defaultFields={query.sort?.split(',') || ['-ID']}
-                            sortingFields={['ID', 'Assignee', 'Updated date', 'Stage', 'State', 'Task ID', 'Project ID', 'Task name', 'Project name']}
+                            sortingFields={['ID', 'Updated date', 'Task ID', 'Task name']}
                             onApplySorting={onApplySorting}
                         />
-                        <FilteringComponent
-                            value={query.filter}
-                            predefinedVisible={visibility.predefined}
-                            builderVisible={visibility.builder}
-                            recentVisible={visibility.recent}
-                            onPredefinedVisibleChange={(visible: boolean) => (
-                                setVisibility({ ...defaultVisibility, predefined: visible })
-                            )}
-                            onBuilderVisibleChange={(visible: boolean) => (
-                                setVisibility({ ...defaultVisibility, builder: visible })
-                            )}
-                            onRecentVisibleChange={(visible: boolean) => (
-                                setVisibility({ ...defaultVisibility, builder: visibility.builder, recent: visible })
-                            )}
-                            onApplyFilter={onApplyFilter}
-                        />
+                        {/* <FilteringComponent */}
+                        {/*    value={query.filter} */}
+                        {/*    predefinedVisible={visibility.predefined} */}
+                        {/*    builderVisible={visibility.builder} */}
+                        {/*    recentVisible={visibility.recent} */}
+                        {/*    onPredefinedVisibleChange={(visible: boolean) => ( */}
+                        {/*        setVisibility({ ...defaultVisibility, predefined: visible }) */}
+                        {/*    )} */}
+                        {/*    onBuilderVisibleChange={(visible: boolean) => ( */}
+                        {/*        setVisibility({ ...defaultVisibility, builder: visible }) */}
+                        {/*    )} */}
+                        {/*    onRecentVisibleChange={(visible: boolean) => ( */}
+                        {/*      setVisibility({...defaultVisibility, builder: visibility.builder, recent: visible}) */}
+                        {/*    )} */}
+                        {/*    onApplyFilter={onApplyFilter} */}
+                        {/* /> */}
                     </div>
                 </div>
             </Col>

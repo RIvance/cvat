@@ -7,6 +7,7 @@ import getCore from 'cvat-core-wrapper';
 import { Indexable, JobsQuery } from 'reducers/interfaces';
 import { string } from 'prop-types';
 import { saveAnnotationsAsync } from './annotation-actions';
+import { updateJobAsync } from './tasks-actions';
 
 const cvat = getCore();
 
@@ -80,12 +81,14 @@ export const getJobsAsync = (query: JobsQuery): ThunkAction => async (dispatch) 
     }
 };
 
-export const submitJobReviewAsync = (jobID: number, reviewResult: boolean): ThunkAction => async (dispatch) => {
+export const submitJobReviewAsync = (jobID: number, reviewResult: boolean, after: () => void):
+    ThunkAction => async (dispatch) => {
     try {
         dispatch(jobsActions.submitJobReview(reviewResult));
         const result = await cvat.jobs.review(jobID, reviewResult);
         if (result.success || (result.data && result.data.success)) {
             dispatch(jobsActions.submitJobReviewSuccess());
+            after();
         } else if (result.data && result.data instanceof string) {
             dispatch(jobsActions.checkReviewableForbidden(result.data));
         } else {
@@ -96,14 +99,16 @@ export const submitJobReviewAsync = (jobID: number, reviewResult: boolean): Thun
     }
 };
 
-export const submitJobAsync = (sessionInstance: any): ThunkAction => async (dispatch) => {
+export const submitJobAsync = (sessionInstance: any, after: () => void): ThunkAction => async (dispatch) => {
     try {
         if (sessionInstance instanceof cvat.classes.Job) {
+            await dispatch(updateJobAsync(sessionInstance));
             dispatch(jobsActions.submitJob());
             dispatch(saveAnnotationsAsync(sessionInstance, async () => {
                 const result = await cvat.jobs.submit(sessionInstance.id);
                 if (result.success || (result.data && result.data.success)) {
                     dispatch(jobsActions.submitJobSuccess());
+                    after();
                 } else if (result.data && result.data instanceof string) {
                     dispatch(jobsActions.checkReviewableForbidden(result.data));
                 } else {

@@ -706,6 +706,7 @@
             const data = {
                 id: undefined,
                 assignee: null,
+                assign_time: null,
                 stage: undefined,
                 state: undefined,
                 start_frame: undefined,
@@ -779,6 +780,9 @@
                             updateTrigger.update('assignee');
                             data.assignee = assignee;
                         },
+                    },
+                    assignTime: {
+                        get: () => data.assign_time,
                     },
                     /**
                      * @name stage
@@ -1149,6 +1153,7 @@
                                 url: job.url,
                                 id: job.id,
                                 assignee: job.assignee,
+                                assign_time: job.assign_time,
                                 state: job.state,
                                 stage: job.stage,
                                 start_frame: segment.start_frame,

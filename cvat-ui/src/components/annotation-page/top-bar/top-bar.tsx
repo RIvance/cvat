@@ -50,9 +50,9 @@ interface Props {
     showFilters(): void;
     onSwitchPlay(): void;
     onSaveAnnotation(): void;
-    onFinishJob(): void;
-    onReviewAccept(): void; // review mode
-    onReviewReject(): void; // review mode
+    onFinishJob(after: () => void): void;
+    onReviewAccept(after: () => void): void; // review mode
+    onReviewReject(after: () => void): void; // review mode
     onPrevFrame(): void;
     onNextFrame(): void;
     onForward(): void;

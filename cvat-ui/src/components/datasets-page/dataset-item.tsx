@@ -9,7 +9,7 @@ import { Row, Col } from 'antd/lib/grid';
 import Button from 'antd/lib/button';
 import moment from 'moment';
 
-import { ActiveInference, TaskStatus } from 'reducers/interfaces';
+import { ActiveInference } from 'reducers/interfaces';
 import { withRouter } from 'react-router-dom';
 import { DollarCircleOutlined } from '@ant-design/icons';
 
@@ -120,7 +120,7 @@ class DatasetItemComponent extends React.PureComponent<DataSetItemProps & RouteC
     }
 
     public render(): JSX.Element {
-        const { taskInstance, deleted, hidden } = this.props;
+        const { deleted, hidden } = this.props;
         const style = {};
         if (deleted) {
             (style as any).pointerEvents = 'none';
@@ -131,13 +131,14 @@ class DatasetItemComponent extends React.PureComponent<DataSetItemProps & RouteC
             (style as any).display = 'none';
         }
 
-        return (taskInstance.status === TaskStatus.COMPLETED ? (
+        return (
+            // taskInstance.status === TaskStatus.COMPLETED ? (
             <Row className='cvat-datasets-list-item' justify='center' align='top' style={{ ...style }}>
                 {this.renderPreview()}
                 {this.renderDescription()}
                 {this.renderNavigation()}
             </Row>
-        ) : <></>
+            // ) : <></>
         );
     }
 }

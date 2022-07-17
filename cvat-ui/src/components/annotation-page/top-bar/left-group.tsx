@@ -33,9 +33,9 @@ interface Props {
     toolsBlockerState: ToolsBlockerState;
     activeControl: ActiveControl;
     onSaveAnnotation(): void;
-    onFinishJob(): void;
-    onReviewAccept(): void; // review mode
-    onReviewReject(): void; // review mode
+    onFinishJob(after: () => void): void;
+    onReviewAccept(after: () => void): void; // review mode
+    onReviewReject(after: () => void): void; // review mode
     onUndoClick(): void;
     onRedoClick(): void;
     onFinishDraw(): void;
@@ -115,8 +115,7 @@ function LeftGroup(props: Props): JSX.Element {
                                 className='cvat-annotation-header-button'
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    onFinishJob();
-                                    history.push(`tasks/${jobInstance.taskId}`);
+                                    onFinishJob(() => history.push(`/tasks/${jobInstance.taskId}`));
                                 }}
                             >
                                 <Icon component={CheckIcon} />
@@ -155,8 +154,7 @@ function LeftGroup(props: Props): JSX.Element {
                                     className='cvat-annotation-header-button'
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        onReviewAccept();
-                                        history.push(`tasks/${jobInstance.taskId}`);
+                                        onReviewAccept(() => history.push('/tasks'));
                                     }}
                                 >
                                     <Icon component={CheckIcon} />
@@ -169,8 +167,7 @@ function LeftGroup(props: Props): JSX.Element {
                                     className='cvat-annotation-header-button'
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        onReviewReject();
-                                        history.push(`tasks/${jobInstance.taskId}`);
+                                        onReviewReject(() => history.push('/tasks'));
                                     }}
                                 >
                                     <Icon component={CheckIcon} />

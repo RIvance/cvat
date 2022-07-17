@@ -53,6 +53,7 @@ module.exports = {
         'jsx-quotes': ['error', 'prefer-single'],
 
         'no-nested-ternary': 'off',
+        'max-len': 'off',
     },
     // settings: {
     //     'import/resolver': {

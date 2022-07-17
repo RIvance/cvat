@@ -14,7 +14,7 @@ import { Col, Row } from 'antd/lib/grid';
 import Pagination from 'antd/lib/pagination';
 
 import { TasksQuery, Indexable } from 'reducers/interfaces';
-import FeedbackComponent from 'components/feedback/feedback';
+// import FeedbackComponent from 'components/feedback/feedback';
 import { updateHistoryFromQuery } from 'components/resource-sorting-filtering';
 import TaskListContainer from 'containers/datasets-page/dataset-list';
 import {
@@ -30,6 +30,16 @@ interface Props {
     query: TasksQuery;
     count: number;
     countInvisible: number;
+}
+
+function updateFilter(filter: string | null): string {
+    if (filter !== null) {
+        if (filter.includes('{"==":[{"var":"status"},"completed"]}')) {
+            return filter;
+        }
+        return `{"and":[{"==":[{"var":"status"},"completed"]}, ${filter}]}`;
+    }
+    return '{"==":[{"var":"status"},"completed"]}';
 }
 
 function DatasetPageComponent(props: Props): JSX.Element {
@@ -52,7 +62,10 @@ function DatasetPageComponent(props: Props): JSX.Element {
 
     useEffect(() => {
         dispatch(getPurchasedListAsync());
-        dispatch(getTasksAsync({ ...updatedQuery }));
+        dispatch(getTasksAsync({
+            ...updatedQuery,
+            filter: updateFilter(updatedQuery.filter),
+        }));
         setIsMounted(true);
     }, []);
 
@@ -95,6 +108,7 @@ function DatasetPageComponent(props: Props): JSX.Element {
                         onChange={(page: number) => {
                             dispatch(getTasksAsync({
                                 ...query,
+                                filter: updateFilter(query.filter),
                                 page,
                             }));
                         }}
@@ -118,6 +132,7 @@ function DatasetPageComponent(props: Props): JSX.Element {
                     dispatch(
                         getTasksAsync({
                             ...query,
+                            filter: updateFilter(query.filter),
                             search,
                             page: 1,
                         }),
@@ -127,7 +142,7 @@ function DatasetPageComponent(props: Props): JSX.Element {
                     dispatch(
                         getTasksAsync({
                             ...query,
-                            filter,
+                            filter: updateFilter(filter),
                             page: 1,
                         }),
                     );
@@ -136,6 +151,7 @@ function DatasetPageComponent(props: Props): JSX.Element {
                     dispatch(
                         getTasksAsync({
                             ...query,
+                            filter: updateFilter(query.filter),
                             sort: sorting,
                             page: 1,
                         }),
@@ -150,7 +166,7 @@ function DatasetPageComponent(props: Props): JSX.Element {
                     <Spin size='large' className='cvat-spinner' />
                 </div>
             ) : content }
-            <FeedbackComponent />
+            {/* <FeedbackComponent /> */}
         </div>
     );
 }

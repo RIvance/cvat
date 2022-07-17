@@ -224,7 +224,7 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
                     if (jobInstance.assignee.id === user.id) {
                         shouldShow = true;
                     } else {
-                        const assignTime: Date = new Date(jobInstance.assign_time);
+                        const assignTime: Date = new Date(jobInstance.assignTime);
                         const duration = new Date().getTime() - assignTime.getTime();
                         if (duration > ASSIGN_DURATION_THRESHOLD) {
                             shouldShow = true;
@@ -291,7 +291,7 @@ function JobListComponent(props: Props & RouteComponentProps): JSX.Element {
             completed++;
         }
 
-        const assignTime = moment(job.assign_time);
+        const assignTime = moment(job.assignTime);
 
         const now = moment(moment.now());
         acc.push({

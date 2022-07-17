@@ -212,12 +212,12 @@ function AnnotationMenuComponent(props: Props & RouteComponentProps): JSX.Elemen
                 taskDimension: jobInstance.dimension,
             })}
 
-            <Menu.Item
-                key={Actions.EXPORT_TASK_DATASET}
-                disabled={viewMode !== JobViewMode.EDIT}
-            >
-                Export task dataset
-            </Menu.Item>
+            {/* <Menu.Item */}
+            {/*    key={Actions.EXPORT_TASK_DATASET} */}
+            {/*    disabled={viewMode !== JobViewMode.EDIT} */}
+            {/* > */}
+            {/*    Export task dataset */}
+            {/* </Menu.Item> */}
 
             <Menu.Item
                 key={Actions.REMOVE_ANNO}

@@ -34,16 +34,16 @@ import TaskPageContainer from 'containers/task-page/task-page';
 
 import DatasetsPageContainer from 'containers/datasets-page/datasets-page';
 
-import ProjectsPageComponent from 'components/projects-page/projects-page';
-import CreateProjectPageComponent from 'components/create-project-page/create-project-page';
-import ProjectPageComponent from 'components/project-page/project-page';
-
-import CloudStoragesPageComponent from 'components/cloud-storages-page/cloud-storages-page';
-import CreateCloudStoragePageComponent from 'components/create-cloud-storage-page/create-cloud-storage-page';
-import UpdateCloudStoragePageComponent from 'components/update-cloud-storage-page/update-cloud-storage-page';
-
-import OrganizationPage from 'components/organization-page/organization-page';
-import CreateOrganizationComponent from 'components/create-organization-page/create-organization-page';
+// import ProjectsPageComponent from 'components/projects-page/projects-page';
+// import CreateProjectPageComponent from 'components/create-project-page/create-project-page';
+// import ProjectPageComponent from 'components/project-page/project-page';
+//
+// import CloudStoragesPageComponent from 'components/cloud-storages-page/cloud-storages-page';
+// import CreateCloudStoragePageComponent from 'components/create-cloud-storage-page/create-cloud-storage-page';
+// import UpdateCloudStoragePageComponent from 'components/update-cloud-storage-page/update-cloud-storage-page';
+//
+// import OrganizationPage from 'components/organization-page/organization-page';
+// import CreateOrganizationComponent from 'components/create-organization-page/create-organization-page';
 
 import AnnotationPageContainer from 'containers/annotation-page/annotation-page';
 import getCore from 'cvat-core-wrapper';
@@ -357,32 +357,26 @@ class CVATApplication extends React.PureComponent<CVATAppProps & RouteComponentP
                                 <ShortcutsDialog />
                                 <GlobalHotKeys keyMap={subKeyMap} handlers={handlers}>
                                     <Switch>
-                                        <Route exact path='/projects' component={ProjectsPageComponent} />
-                                        <Route exact path='/projects/create' component={CreateProjectPageComponent} />
-                                        <Route exact path='/projects/:id' component={ProjectPageComponent} />
+                                        {/* <Route exact path='/projects' component={ProjectsPageComponent} /> */}
+                                        {/* <Route exact path='/projects/create' component={CreateProjectPageComponent} /> */}
+                                        {/* <Route exact path='/projects/:id' component={ProjectPageComponent} /> */}
                                         <Route exact path='/tasks' component={TasksPageContainer} />
                                         <Route exact path='/tasks/create' component={CreateTaskPageContainer} />
                                         <Route exact path='/tasks/:id' component={TaskPageContainer} />
                                         <Route exact path='/tasks/:tid/jobs/:jid' component={AnnotationPageContainer} />
                                         <Route exact path='/datasets' component={DatasetsPageContainer} />
                                         <Route exact path='/jobs' component={JobsPageComponent} />
-                                        <Route exact path='/cloudstorages' component={CloudStoragesPageComponent} />
-                                        <Route
-                                            exact
-                                            path='/cloudstorages/create'
-                                            component={CreateCloudStoragePageComponent}
-                                        />
-                                        <Route
-                                            exact
-                                            path='/cloudstorages/update/:id'
-                                            component={UpdateCloudStoragePageComponent}
-                                        />
-                                        <Route
-                                            exact
-                                            path='/organizations/create'
-                                            component={CreateOrganizationComponent}
-                                        />
-                                        <Route exact path='/organization' component={OrganizationPage} />
+                                        {/* <Route exact path='/cloudstorages' component={CloudStoragesPageComponent} /> */}
+                                        {/* <Route */}
+                                        {/*    exact */}
+                                        {/*    path='/cloudstorages/create' */}
+                                        {/*    component={CreateCloudStoragePageComponent} */}
+                                        {/* /> */}
+                                        {/* <Route */}
+                                        {/*    exact */}
+                                        {/*    path='/cloudstorages/update/:id' */}
+                                        {/*    component={UpdateCloudStoragePageComponent} */}
+                                        {/* /> */}
                                         {isModelPluginActive && (
                                             <Route exact path='/models' component={ModelsPageContainer} />
                                         )}

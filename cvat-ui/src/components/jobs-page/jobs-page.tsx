@@ -12,7 +12,7 @@ import Pagination from 'antd/lib/pagination';
 import Empty from 'antd/lib/empty';
 import Text from 'antd/lib/typography/Text';
 
-import FeedbackComponent from 'components/feedback/feedback';
+// import FeedbackComponent from 'components/feedback/feedback';
 import { updateHistoryFromQuery } from 'components/resource-sorting-filtering';
 import { CombinedState, Indexable } from 'reducers/interfaces';
 import { getJobsAsync } from 'actions/jobs-actions';
@@ -109,7 +109,7 @@ function JobsPageComponent(): JSX.Element {
             { fetching ? (
                 <Spin size='large' className='cvat-spinner' />
             ) : content }
-            <FeedbackComponent />
+            {/* <FeedbackComponent /> */}
         </div>
     );
 }

@@ -7,6 +7,13 @@
  * @module API
  */
 
+/**
+ * TODO**: Add new APIs here
+ *  APIs should be implemented in `api-implementations.js`
+ *  The functions fetching data from the backend should be implemented in `server-proxy.js`
+ *  New fields should be added in `session.js` like: `assignTime: { get: () => data.assign_time, },`
+ */
+
 function build() {
     const PluginRegistry = require('./plugins');
     const loggerStorage = require('./logger-storage');
@@ -40,12 +47,6 @@ function build() {
      * @memberof module:API
      */
     const cvat = {
-
-        /**
-         * TODO: Add new APIs here
-         *  APIs should be implemented in `api-implementations.js`
-         *  The functions fetching data from the backend should be implemented in `server-proxy.js`
-         */
 
         /**
          * Namespace is used for an interaction with a server

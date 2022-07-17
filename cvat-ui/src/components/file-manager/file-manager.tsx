@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -298,9 +298,9 @@ export class FileManager extends React.PureComponent<Props, State> {
                     }}
                 >
                     {this.renderLocalSelector()}
-                    {this.renderShareSelector()}
+                    {/* {this.renderShareSelector()} */}
                     {this.renderRemoteSelector()}
-                    {this.renderCloudStorageSelector()}
+                    {/* {this.renderCloudStorageSelector()} */}
                 </Tabs>
             </>
         );

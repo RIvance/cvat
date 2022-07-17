@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Intel Corporation
+// Copyright (C) 2022 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -44,6 +44,7 @@ export interface AdvancedConfiguration {
 
 const initialValues: AdvancedConfiguration = {
     imageQuality: 70,
+    segmentSize: 200,
     lfs: false,
     useZipChunks: true,
     useCache: true,
@@ -253,8 +254,8 @@ class AdvancedConfigurationForm extends React.PureComponent<Props> {
     private renderSegmentSize(): JSX.Element {
         return (
             <CVATTooltip title='Defines a number of frames in a segment'>
-                <Form.Item label='Segment size' name='segmentSize' rules={[{ validator: isInteger({ min: 1 }) }]}>
-                    <Input size='large' type='number' min={1} />
+                <Form.Item label='Segment size' name='segmentSize' rules={[{ validator: isInteger({ min: 10 }) }]}>
+                    <Input size='large' type='number' min={10} defaultValue={200} />
                 </Form.Item>
             </CVATTooltip>
         );
