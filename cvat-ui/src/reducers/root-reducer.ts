@@ -23,11 +23,13 @@ import importReducer from './import-reducer';
 import cloudStoragesReducer from './cloud-storages-reducer';
 import organizationsReducer from './organizations-reducer';
 import userAssetsReducer from './user-assets-reducer';
+import transactionsReducer from './transactions-reducer';
 
 export default function createRootReducer(): Reducer {
     return combineReducers({
         auth: authReducer,
         userAssets: userAssetsReducer,
+        transactions: transactionsReducer,
         projects: projectsReducer,
         tasks: tasksReducer,
         jobs: jobsReducer,

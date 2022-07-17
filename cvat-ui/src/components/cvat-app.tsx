@@ -34,6 +34,8 @@ import TaskPageContainer from 'containers/task-page/task-page';
 
 import DatasetsPageContainer from 'containers/datasets-page/datasets-page';
 
+// import TransactionsPageContainer from "containers/transactions-page/transactions-page";
+
 // import ProjectsPageComponent from 'components/projects-page/projects-page';
 // import CreateProjectPageComponent from 'components/create-project-page/create-project-page';
 // import ProjectPageComponent from 'components/project-page/project-page';
@@ -366,6 +368,9 @@ class CVATApplication extends React.PureComponent<CVATAppProps & RouteComponentP
                                         <Route exact path='/tasks/:tid/jobs/:jid' component={AnnotationPageContainer} />
                                         <Route exact path='/datasets' component={DatasetsPageContainer} />
                                         <Route exact path='/jobs' component={JobsPageComponent} />
+
+                                        {/* <Route exact path='/transactions' component={TransactionsPageContainer} /> */}
+
                                         {/* <Route exact path='/cloudstorages' component={CloudStoragesPageComponent} /> */}
                                         {/* <Route */}
                                         {/*    exact */}

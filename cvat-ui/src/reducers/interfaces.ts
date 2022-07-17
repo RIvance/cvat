@@ -41,6 +41,10 @@ export interface UserAssetsState {
     datasets: number[];
 }
 
+export interface TransactionsState {
+    transactions: any[];
+}
+
 export interface ProjectsState {
     initialized: boolean;
     fetching: boolean;
@@ -772,6 +776,7 @@ export interface OrganizationState {
 export interface CombinedState {
     auth: AuthState;
     userAssets: UserAssetsState;
+    transactions: TransactionsState;
     projects: ProjectsState;
     jobs: JobsState;
     tasks: TasksState;
